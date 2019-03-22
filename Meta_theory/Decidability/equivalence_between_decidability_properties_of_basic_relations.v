@@ -1,5 +1,7 @@
 Require Export GeoCoq.Tarski_dev.Ch04_col.
+(*
 Require Import GeoCoq.Utils.all_equiv.
+*)
 
 Section Equivalence_between_decidability_properties_of_basic_relations.
 
@@ -437,6 +439,7 @@ Definition decidability_of_congruence_of_points := forall A B C D:Tpoint,
 Definition decidability_of_betweenness_of_points := forall A B C:Tpoint,
   Bet A B C \/ ~ Bet A B C.
 
+(*
 Theorem equivalence_between_decidability_properties_of_basic_relations :
   all_equiv  (decidability_of_equality_of_points::
               decidability_of_congruence_of_points::
@@ -451,5 +454,6 @@ assert (R:=bet_dec_eq_dec).
 assert (S:=eq_dec_bet_dec).
 decompose [or] H;clear H;decompose [or] H0;clear H0;subst; tauto.
 Qed.
+*)
 
 End Equivalence_between_decidability_properties_of_basic_relations.

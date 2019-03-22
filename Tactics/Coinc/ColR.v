@@ -1,7 +1,7 @@
 Require Import Recdef.
 Require Import NArith.
 Require Import GeoCoq.Utils.sets.
-
+(*
 Module SSWP := WPropertiesOn SetOfSetsOfPositiveOrderedType SS.
 
 Module SSWEqP := WEqPropertiesOn SetOfSetsOfPositiveOrderedType SS.
@@ -1520,3 +1520,4 @@ elim Hp; intro HInAux; clear Hp.
 Qed.
 
 End Col_refl.
+*)
