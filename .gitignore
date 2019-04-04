@@ -5,6 +5,8 @@ Makefile
 *.v.d
 *.aux
 
+\#*\#
+
 Makefile.conf
 .DS_Store
 .coqdeps.d
