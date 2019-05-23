@@ -6,17 +6,6 @@ Require Import Sorting.
 Require Import Coq.Program.Equality.
 Require Export GeoCoq.Tactics.Coinc.tactics_axioms.
 
-Fixpoint S_mem (x : positive) (s : list positive) :=
-  match s with
-  | nil => false
-  | y :: l =>
-      match PositiveOrderedTypeBits.compare x y with
-      | Lt => false
-      | Eq => true
-      | Gt => S_mem x l
-      end
-  end.
-
 (*
 Module S := MSetList.Make PositiveOrderedTypeBits.
 *)
