@@ -1,5 +1,8 @@
 Require Export GeoCoq.Tarski_dev.Ch09_plane.
+
+(*
 Require Export GeoCoq.Tarski_dev.Tactics.CoincR_for_cop.
+ *)
 
 Ltac assert_cops :=
  repeat match goal with
