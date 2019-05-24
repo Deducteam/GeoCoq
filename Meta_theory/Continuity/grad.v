@@ -1,9 +1,7 @@
 Require Import GeoCoq.Tarski_dev.Ch08_orthogonality.
-Require Import Relations.
-(*
-Require Import Setoid.
- *)
 
+Require Import Relations.
+Require Import Setoid.
 
 Section Grad.
 
@@ -208,11 +206,14 @@ Inductive GradExpInv : Tpoint -> Tpoint -> Tpoint -> Prop :=
   | gradexpinv_stab : forall A B B' C, Bet A B' B -> Cong A B' B' B -> GradExpInv A B C ->
                     GradExpInv A B' C.
 
-
+(*
 Inductive clos_refl_trans_n1 (A : Type) (R : relation A) (x : A) : A -> Prop :=
   rtn1_refl : clos_refl_trans_n1 A R x x
 | rtn1_trans : forall y z : A,
     R y z -> clos_refl_trans_n1 A R x y -> clos_refl_trans_n1 A R x z.
+ *)
+
+
 
 Lemma gradexp_clos_trans : forall A B C, GradExp A B C <->
   clos_refl_trans_n1 Tpoint (fun X Y => Midpoint X A Y) B C.
