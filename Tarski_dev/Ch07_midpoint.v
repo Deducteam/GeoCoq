@@ -1,8 +1,6 @@
 Require Export GeoCoq.Tarski_dev.Ch06_out_lines.
 
-(*
 Require Export GeoCoq.Tarski_dev.Tactics.ColR.
-*)
 
 Ltac not_exist_hyp_comm A B := not_exist_hyp (A<>B);not_exist_hyp (B<>A).
 
@@ -60,17 +58,15 @@ repeat
        decompose [and] T;clear T;clean_reap_hyps
  end.
 
-(*
 Ltac ColR :=
  let tpoint := constr:(Tpoint) in
  let col := constr:(Col) in
  treat_equalities; assert_cols; assert_diffs; try (solve [Col]); Col_refl tpoint col.
-*)
+(*
 Axiom my_false : False.
 
 Ltac ColR := elim my_false.
-
-
+*)
 
 Section T7_1.
 

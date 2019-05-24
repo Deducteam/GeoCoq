@@ -14,7 +14,7 @@ Module S := MSetList.Make PositiveOrderedTypeBits.
 (*
 We choose to use lists as it is as fast as AVLs for a limited number of points but they are easier to debug.
 *)
-Module S := MSetAVL.Make PositiveOrderedTypeBits.
+Module SS := MSetAVL.Make PositiveOrderedTypeBits.
 
 
 Module SWP := WPropertiesOn PositiveOrderedTypeBits S.
