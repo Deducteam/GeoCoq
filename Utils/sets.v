@@ -1,4 +1,3 @@
-Require Export MSets.
 Require Import Arith.
 Require Import NArith.
 Require Import Notations.
@@ -6,14 +5,18 @@ Require Import Sorting.
 Require Import Coq.Program.Equality.
 Require Export GeoCoq.Tactics.Coinc.tactics_axioms.
 
-(*
+
+Require Export MSets.
+
+
 Module S := MSetList.Make PositiveOrderedTypeBits.
-*)
+
 (*
 We choose to use lists as it is as fast as AVLs for a limited number of points but they are easier to debug.
-Module S := MSetAVL.Make PositiveOrderedTypeBits.
 *)
-(*
+Module S := MSetAVL.Make PositiveOrderedTypeBits.
+
+
 Module SWP := WPropertiesOn PositiveOrderedTypeBits S.
 
 Module SetOfSetsOfPositiveOrderedType <: OrderedType.
@@ -409,12 +412,11 @@ Module SetOfPairsOfPositiveOrderedType <: OrderedType.
 End SetOfPairsOfPositiveOrderedType.
 
 Module SP := MSetList.Make SetOfPairsOfPositiveOrderedType.
-*)
 (*
 Module SP := MSetAVL.Make SetOfPairsOfPositiveOrderedType.
 *)
 
-(*
+
 
 Module PosOrder <: TotalLeBool.
 
@@ -696,6 +698,8 @@ induction n.
     rename HInOK into HIn.
     assumption.
 Qed.
+
+
 
 Section Set_of_tuple_of_positive.
 
@@ -1275,5 +1279,3 @@ TODO: try to see if using sorted lists would not make the tactic faster.
   Proof. intros; simpl; elim (eqST_dec x y);intro;intuition. Qed.
 
 End Set_of_tuple_of_positive.
-
-*)

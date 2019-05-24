@@ -3,6 +3,8 @@ Require Import NArith.
 Require Import Sorting.
 Require Import GeoCoq.Tactics.Coinc.Permutations.
 Require Import GeoCoq.Utils.general_tactics.
+
+(*
 Require Import GeoCoq.Utils.sets.
 
 Module SSWP := WPropertiesOn SetOfSetsOfPositiveOrderedType SS.
@@ -1205,3 +1207,4 @@ Definition Tagged P : Prop := P.
 
 Lemma PropToTagged : forall P : Prop, P -> Tagged P.
 Proof. trivial. Qed.
+*)

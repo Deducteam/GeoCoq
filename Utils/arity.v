@@ -2,7 +2,11 @@ Require Import Arith.
 Require Import NArith.
 Require Import List.
 Require Import Sorting.
+(*
 Require Import Coq.Program.Equality.
+*)
+
+Require Import Eqdep.
 
 Lemma minus_n_0 : forall n, n-0 = n.
 Proof.
@@ -778,6 +782,22 @@ induction l.
 simpl; reflexivity.
 simpl; reflexivity.
 Qed.
+
+
+Ltac elim_eq_rect :=
+  match goal with
+    | [ |- ?t ] =>
+      match t with
+        | context [ @eq_rect _ _ _ _ _ ?p ] =>
+          let P := fresh "P" in
+            set (P := p); simpl in P ;
+	      ((case P ; clear P) || (clearbody P; rewrite (UIP_refl _ _ P); clear P))
+        | context [ @eq_rect _ _ _ _ _ ?p _ ] =>
+          let P := fresh "P" in
+            set (P := p); simpl in P ;
+	      ((case P ; clear P) || (clearbody P; rewrite (UIP_refl _ _ P); clear P))
+      end
+  end.
 
 Lemma ListToCPTl {T : Type} :
   forall (a a0 : T) l (Ha0l : (S (length l)) = length (a0  :: l)) Haa0l Default,

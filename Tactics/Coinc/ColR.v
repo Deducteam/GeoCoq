@@ -1,6 +1,10 @@
 Require Import Recdef.
 Require Import NArith.
+(*
 Require Import GeoCoq.Utils.sets.
+*)
+
+
 (*
 Module SSWP := WPropertiesOn SetOfSetsOfPositiveOrderedType SS.
 
@@ -313,6 +317,9 @@ Defined.
 Definition test_col (ss : SS.t) (sp : SP.t) p1 p2 p3 : bool :=
   let newss := identify_lines ss sp  in
     SS.exists_ (fun s => S.mem p1 s && S.mem p2 s && S.mem p3 s) newss.
+
+
+ *)
 
 Section Col_refl.
 
@@ -1520,4 +1527,3 @@ elim Hp; intro HInAux; clear Hp.
 Qed.
 
 End Col_refl.
-*)

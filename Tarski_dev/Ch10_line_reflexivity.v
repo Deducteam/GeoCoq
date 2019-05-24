@@ -1,11 +1,18 @@
 Require Export GeoCoq.Tarski_dev.Ch09_plane.
-Require Export GeoCoq.Tarski_dev.Tactics.CoincR_for_cop.
 
+(*
+Require Export GeoCoq.Tarski_dev.Tactics.CoincR_for_cop.
+ *)
+
+(*
 Ltac CopR :=
  let tpoint := constr:(Tpoint) in
  let col := constr:(Col) in
  let cop := constr:(Coplanar) in
    assert_ncols; Cop_refl tpoint col cop.
+ *)
+Ltac CopR := elim my_false.
+
 
 Section T10.
 
