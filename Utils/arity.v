@@ -2,10 +2,7 @@ Require Import Arith.
 Require Import NArith.
 Require Import List.
 Require Import Sorting.
-
 Require Import Coq.Program.Equality.
-
-Require Import Eqdep.
 
 Lemma minus_n_0 : forall n, n-0 = n.
 Proof.
