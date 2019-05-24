@@ -953,10 +953,12 @@ assert (HX : exists X, Col C D X /\ I <> X) by (exists C; split; try intro; trea
 destruct HX as [X [HCol3 HIX]].
 destruct (symmetric_point_construction X I) as [Y HMid].
 exists X; exists Y; assert_diffs; assert_cols; do 2 (split; try ColR).
+(*
 split; try (intro; assert (I = X) by (assert_diffs; assert_cols; apply l6_21 with A B C D; Col); Col).
 split; try (intro; assert (I = Y) by (assert_diffs; assert_cols; apply l6_21 with A B C D;
                                       Col; ColR); Col).
 exists I; unfold Midpoint in HMid; spliter; split; Col; Between.
+*)
 Qed.
 
 Lemma cop_not_par_other_side :

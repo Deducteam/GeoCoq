@@ -64,8 +64,8 @@ repeat
 Ltac ColR :=
  let tpoint := constr:(Tpoint) in
  let col := constr:(Col) in
-   treat_equalities; assert_cols; assert_diffs; try (solve [Col]); Col_refl tpoint col.
- *)
+ treat_equalities; assert_cols; assert_diffs; try (solve [Col]); Col_refl tpoint col.
+*)
 Axiom my_false : False.
 
 Ltac ColR := elim my_false.
