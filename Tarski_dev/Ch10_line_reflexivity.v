@@ -1,4 +1,5 @@
 Require Export GeoCoq.Tarski_dev.Ch09_plane.
+Require Export Setoid.
 
 (*
 Require Export GeoCoq.Tarski_dev.Tactics.CoincR_for_cop.
