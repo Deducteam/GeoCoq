@@ -1,3 +1,4 @@
+Require Export MSets.
 Require Import Arith.
 Require Import NArith.
 Require Import Notations.
@@ -5,17 +6,11 @@ Require Import Sorting.
 Require Import Coq.Program.Equality.
 Require Export GeoCoq.Tactics.Coinc.tactics_axioms.
 
-
-Require Export MSets.
-
-
 Module S := MSetList.Make PositiveOrderedTypeBits.
-
 (*
 We choose to use lists as it is as fast as AVLs for a limited number of points but they are easier to debug.
+Module S := MSetAVL.Make PositiveOrderedTypeBits.
 *)
-Module SS := MSetAVL.Make PositiveOrderedTypeBits.
-
 
 Module SWP := WPropertiesOn PositiveOrderedTypeBits S.
 
@@ -416,6 +411,41 @@ Module SP := MSetList.Make SetOfPairsOfPositiveOrderedType.
 Module SP := MSetAVL.Make SetOfPairsOfPositiveOrderedType.
 *)
 
+Module SPWP := WPropertiesOn SetOfPairsOfPositiveOrderedType SP.
+
+Module SetOfSetsOfPairsOfPositiveOrderedType <: OrderedType.
+
+  Definition t := SP.t.
+
+  Definition eq := SP.Equal.
+
+  Definition eq_equiv := SP.eq_equiv.
+
+  Definition eqb := SP.equal.
+
+  Definition eqb_eq := SP.equal_spec.
+
+  Definition lt := SP.lt.
+
+  Instance lt_compat : Proper (eq==>eq==>iff) lt.
+  Proof.
+  apply SP.lt_compat.
+ Qed.
+
+  Instance lt_strorder : StrictOrder lt.
+  Proof.
+  apply SP.lt_strorder.
+ Qed.
+
+  Definition compare := SP.compare.
+
+  Definition compare_spec := SP.compare_spec.
+
+  Definition eq_dec := SP.eq_dec.
+
+End SetOfSetsOfPairsOfPositiveOrderedType.
+
+Module SSP := MSetList.Make SetOfSetsOfPairsOfPositiveOrderedType.
 
 
 Module PosOrder <: TotalLeBool.
@@ -524,7 +554,7 @@ intro l; induction l.
       by (apply Permutation.Permutation_in with (a0 :: l'); apply Permutation.Permutation_sym in HPerm;assumption).
     clear HIna'; clear HIna0'; apply in_inv in HIna; apply in_inv in HIna0.
     elim HIna; clear HIna; intro HIna; elim HIna0; clear HIna0; intro HIna0;
-    try (rewrite HIna in * ); try (rewrite <- HIna0 in * ).
+    try (rewrite HIna in *); try (rewrite <- HIna0 in *).
 
       assert (HPerm' : Permutation.Permutation l l')
         by (apply Permutation.Permutation_app_inv_l with (a :: nil); simpl; assumption).
@@ -698,7 +728,6 @@ induction n.
     rename HInOK into HIn.
     assumption.
 Qed.
-
 
 
 Section Set_of_tuple_of_positive.
