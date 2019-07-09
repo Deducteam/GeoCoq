@@ -1,452 +1,191 @@
-Require Export MSets.
 Require Import Arith.
+Require Import Bool.
 Require Import NArith.
 Require Import Notations.
 Require Import Sorting.
-Require Import Coq.Program.Equality.
 Require Export GeoCoq.Tactics.Coinc.tactics_axioms.
+Require Export GeoCoq.Utils.TCSets.
 
-Module S := MSetList.Make PositiveOrderedTypeBits.
-(*
-We choose to use lists as it is as fast as AVLs for a limited number of points but they are easier to debug.
-Module S := MSetAVL.Make PositiveOrderedTypeBits.
-*)
+Lemma Pos_lt_not_eq : forall x y,
+  Pos.lt x y -> ~ Pos.eq x y.
+Proof. intros x y L E; rewrite E in L; apply (Pos.lt_irrefl y); auto. Qed.
 
-Module SWP := WPropertiesOn PositiveOrderedTypeBits S.
+Global Instance S : OrderedType.
+Proof.
+exact (Build_OrderedType Pos.eq Pos.eqb Pos.lt Pos.compare
+                         Pos.eqb_eq
+                         (@Logic.eq_refl positive)
+                         (@Logic.eq_sym positive)
+                         (@Logic.eq_trans positive)
+                         Pos.lt_trans
+                         Pos_lt_not_eq
+                         Pos.compare_spec).
+Defined.
 
-Module SetOfSetsOfPositiveOrderedType <: OrderedType.
-
-  Definition t := S.t.
-
-  Definition eq := S.Equal.
-
-  Include IsEq.
-
-  Definition eqb := S.equal.
-
-  Definition eqb_eq := S.equal_spec.
-
-  Include HasEqBool2Dec.
-
-  Definition lt := S.lt.
-
-  Instance lt_compat : Proper (eq==>eq==>iff) lt.
-  Proof.
-  apply S.lt_compat.
- Qed.
-
-  Instance lt_strorder : StrictOrder lt.
-  Proof.
-  apply S.lt_strorder.
- Qed.
-
-  Definition compare := S.compare.
-
-  Definition compare_spec := S.compare_spec.
-
-End SetOfSetsOfPositiveOrderedType.
-
-Module SS := MSetList.Make SetOfSetsOfPositiveOrderedType.
-(*
-Module SS := MSetAVL.Make SetOfSetsOfPositiveOrderedType.
-*)
+Global Instance SS : OrderedType.
+Proof.
+exact (Build_OrderedType (@Equal S) (@equal S) (@lt_set S) (@compare_set S)
+                         (@equal_Equal S)
+                         (@Equal_refl S)
+                         (@Equal_sym S)
+                         (@Equal_trans S)
+                         (@lt_set_trans S)
+                         (@lt_set_not_Equal S)
+                         (@Compare_set S)).
+Defined.
 
 Definition fstpp (pair : (positive * positive)) :=
   match pair with
-    |(a,b) => Pos.min a b
+    | (a,b) => Pos.min a b
   end.
 
 Definition sndpp (pair : (positive * positive)) :=
   match pair with
-    |(a,b) => Pos.max a b
+    | (a,b) => Pos.max a b
   end.
 
-Module SetOfPairsOfPositiveOrderedType <: OrderedType.
+Definition t:= (positive * positive).
 
-  Definition t:= (positive * positive).
+Definition eq (t1 t2 : t) :=
+  Pos.eq (fstpp(t1)) (fstpp(t2)) /\ Pos.eq (sndpp(t1)) (sndpp(t2)).
 
-  Definition eq (t1 t2 : t) :=
-    Pos.eq (fstpp(t1)) (fstpp(t2)) /\ Pos.eq (sndpp(t1)) (sndpp(t2)).
+Definition eqb (t1 t2 : t) :=
+  Pos.eqb (fstpp(t1)) (fstpp(t2)) && Pos.eqb (sndpp(t1)) (sndpp(t2)).
 
-  Include IsEq.
+Lemma eqb_eq : forall t1 t2, eqb t1 t2 = true <-> eq t1 t2.
+Proof.
+intros; unfold eqb; unfold eq; split; intro H;
+[apply andb_true_iff in H; induction H|induction H; apply andb_true_iff];
+split; apply Pos.eqb_eq; assumption.
+Qed.
 
-  Definition eqb (t1 t2 : t) :=
-    Pos.eqb (fstpp(t1)) (fstpp(t2)) && Pos.eqb (sndpp(t1)) (sndpp(t2)).
+Lemma eq_refl : forall t, eq t t.
+Proof. unfold eq; intuition. Qed.
 
-  Lemma eqb_eq : forall t1 t2, eqb t1 t2 = true <-> eq t1 t2.
-  Proof.
-  intros.
-  unfold eqb; unfold eq.
-  split; intro H.
+Lemma eq_sym : forall t t', eq t t' -> eq t' t.
+Proof. unfold eq; intuition. Qed.
 
-    apply andb_true_iff in H.
-    induction H.
-    split; apply Pos.eqb_eq; assumption.
+Lemma eq_trans : forall t1 t2 t3, eq t1 t2 -> eq t2 t3 -> eq t1 t3.
+Proof. unfold eq; intuition; eapply Logic.eq_trans; eauto. Qed.
 
-    induction H.
-    apply andb_true_iff.
-    split; apply Pos.eqb_eq; assumption.
+Definition lt (t1 t2 : t) :=
+  let ft1 := fstpp(t1) in
+  let ft2 := fstpp(t2) in
+  let st1 := sndpp(t1) in
+  let st2 := sndpp(t2) in
+  if Pos.eqb ft1 ft2 then Pos.lt st1 st2
+                     else Pos.lt ft1 ft2.
+
+Lemma lt_trans : forall t1 t2 t3, lt t1 t2 -> lt t2 t3 -> lt t1 t3.
+Proof.
+assert (HTP := Pos.lt_trans).
+intros t1 t2 t3; unfold lt; case_eq (Pos.eqb (fstpp t1) (fstpp t2)).
+
+  {
+  intro HEq12; case_eq (Pos.eqb (fstpp t2) (fstpp t3)).
+
+    {
+    intro HEq23; assert (HEq13 : Pos.eqb (fstpp t1) (fstpp t3) = true)
+        by (apply Pos.eqb_eq in HEq12; rewrite HEq12; assumption).
+    rewrite HEq13; apply HTP.
+    }
+
+    {
+    intro HNEq23; assert (HNEq13 : Pos.eqb (fstpp t1) (fstpp t3) = false)
+      by (apply Pos.eqb_eq in HEq12; rewrite HEq12; assumption).
+    rewrite HNEq13; apply Pos.eqb_eq in HEq12; rewrite HEq12; intuition.
+    }
+  }
+
+  {
+  intro HNEq12; case_eq (Pos.eqb (fstpp t2) (fstpp t3)).
+
+    {
+    intro HEq23; assert (HNEq13 : Pos.eqb (fstpp t1) (fstpp t3) = false)
+      by (apply Pos.eqb_eq in HEq23; rewrite <- HEq23; assumption).
+    rewrite HNEq13; apply Pos.eqb_eq in HEq23; rewrite HEq23; auto.
+    }
+
+    {
+    intro HNEq23; case_eq (Pos.eqb (fstpp t1) (fstpp t3)).
+
+      {
+      intro HEq13; intros.
+      assert (HLt13 : Pos.ltb (fstpp t1) (fstpp t3) = true)
+        by (apply Pos.ltb_lt; apply HTP with (fstpp t2); assumption).
+      apply Pos.eqb_eq in HEq13; rewrite HEq13 in HLt13.
+      apply Pos.ltb_lt in HLt13.
+      exfalso; apply (Pos.lt_irrefl (fstpp t3)); auto.
+      }
+
+      {
+      intros; apply HTP with (fstpp t2); assumption.
+      }
+    }
+  }
  Qed.
 
-  Include HasEqBool2Dec.
+Lemma lt_not_eq : forall t t', lt t t' -> ~ eq t t'.
+Proof.
+intros t t'; unfold lt, eq; case_eq (Pos.eqb (fstpp t) (fstpp t'));
+[|intros _ L; intuition; apply (Pos_lt_not_eq _ _ L); auto].
+intros E L. apply Pos.eqb_eq in E; rewrite E; intuition.
+apply (Pos_lt_not_eq _ _ L); auto.
+Qed.
 
-  Definition lt (t1 t2 : t) :=
-    let ft1 := fstpp(t1) in
-    let ft2 := fstpp(t2) in
-    let st1 := sndpp(t1) in
-    let st2 := sndpp(t2) in
-    if Pos.eqb ft1 ft2 then Pos.lt st1 st2
-                       else Pos.lt ft1 ft2.
+Definition compare t1 t2 :=
+  let ft1 := fstpp(t1) in
+  let ft2 := fstpp(t2) in
+  let st1 := sndpp(t1) in
+  let st2 := sndpp(t2) in
+  match (Pos.compare ft1 ft2) with
+    | Lt => Lt
+    | Eq => Pos.compare st1 st2
+    | Gt => Gt
+  end.
 
-  Lemma lt_irrefl : Irreflexive lt.
-  Proof.
-  assert (HIP : Irreflexive Pos.lt)
-    by (apply StrictOrder_Irreflexive; assumption).
-  unfold Irreflexive in *.
-  unfold Reflexive in *.
-  unfold complement in *.
-  intro x.
-  unfold lt.
-  assert (HEq : Pos.eqb (fstpp(x)) (fstpp(x)) = true)
-    by (apply Pos.eqb_eq; intuition).
-  rewrite HEq.
-  apply HIP.
- Qed.
+Lemma Compare : forall t1 t2,
+  CompareSpec (eq t1 t2) (lt t1 t2) (lt t2 t1) (compare t1 t2).
+Proof.
+intros t1 t2; unfold compare.
+destruct (Pos.compare_spec (fstpp(t1)) (fstpp(t2))) as [E|L|L];
+[|apply CompLt; unfold lt|apply CompGt; unfold lt];
+[|case_eq (Pos.eqb (fstpp(t1)) (fstpp(t2))); auto; intro HF|
+  case_eq (Pos.eqb (fstpp(t2)) (fstpp(t1))); auto; intro HF];
+try solve [apply Pos.eqb_eq in HF; exfalso; apply (Pos_lt_not_eq _ _ L); auto].
+destruct (Pos.compare_spec (sndpp(t1)) (sndpp(t2))) as [E'|L|L];
+[apply CompEq; unfold eq|apply CompLt; unfold lt|apply CompGt; unfold lt];
+[split; auto|case_eq (Pos.eqb (fstpp(t1)) (fstpp(t2))); auto; intro HF|
+             case_eq (Pos.eqb (fstpp(t2)) (fstpp(t1))); auto; intro HF];
+apply Pos.eqb_neq in HF; intuition.
+Qed.
 
-  Lemma lt_antiref : forall x, ~ lt x x.
-  Proof.
-  assert (HIL : Irreflexive lt) by (apply lt_irrefl).
-  unfold Irreflexive in *.
-  unfold Reflexive in *.
-  unfold complement in *.
-  intros x H.
-  apply HIL with x.
-  apply H.
- Qed.
+Global Instance SP : OrderedType.
+Proof.
+exact (Build_OrderedType eq eqb lt compare
+                         eqb_eq
+                         eq_refl
+                         eq_sym
+                         eq_trans
+                         lt_trans
+                         lt_not_eq
+                         Compare).
+Defined.
 
-  Lemma lt_trans : Transitive lt.
-  Proof.
-  assert (HTP : Transitive Pos.lt) by (apply StrictOrder_Transitive; assumption).
-  unfold Transitive in *.
-  intros x y z.
-  unfold lt.
-  case_eq (Pos.eqb (fstpp(x)) (fstpp(y))).
-
-    intro HEqXY.
-    case_eq (Pos.eqb (fstpp(y)) (fstpp(z))).
-
-      intro HEqYZ.
-      assert (HEqXZ : Pos.eqb (fstpp(x)) (fstpp(z)) = true)
-        by (apply Pos.eqb_eq in HEqXY; rewrite HEqXY; assumption).
-      rewrite HEqXZ.
-      apply HTP.
-
-      intro HNEqYZ.
-      assert (HNEqXZ : Pos.eqb (fstpp(x)) (fstpp(z)) = false)
-        by (apply Pos.eqb_eq in HEqXY; rewrite HEqXY; assumption).
-      rewrite HNEqXZ.
-      apply Pos.eqb_eq in HEqXY; rewrite HEqXY.
-      intro.
-      intuition.
-
-    intro HNEqXY.
-    case_eq (Pos.eqb (fstpp(y)) (fstpp(z))).
-
-      intro HEqYZ.
-      assert (HNEqXZ : Pos.eqb (fstpp(x)) (fstpp(z)) = false)
-        by (apply Pos.eqb_eq in HEqYZ; rewrite <- HEqYZ; assumption).
-      rewrite HNEqXZ.
-      apply Pos.eqb_eq in HEqYZ; rewrite HEqYZ.
-      intros.
-      assumption.
-
-      intro HNEqYZ.
-      case_eq (Pos.eqb (fstpp(x)) (fstpp(z))).
-
-        intro HEqXZ.
-        intros.
-        assert (HLtXZ : Pos.ltb (fstpp(x)) (fstpp(z)) = true)
-          by (apply Pos.ltb_lt; apply HTP with (fstpp(y)); assumption).
-        apply Pos.eqb_eq in HEqXZ; rewrite HEqXZ in HLtXZ.
-        assert (HIP : Irreflexive Pos.lt)
-          by (apply StrictOrder_Irreflexive; assumption).
-        unfold Irreflexive in HIP.
-        unfold Reflexive in HIP.
-        unfold complement in HIP.
-        exfalso.
-        apply HIP with (fstpp(z)).
-        apply Pos.ltb_lt in HLtXZ.
-        assumption.
-
-        intro HNEqXZ.
-        intros.
-        apply HTP with (fstpp(y)); assumption.
- Qed.
-
-  Instance lt_compat : Proper (eq==>eq==>iff) lt.
-  Proof.
-  intros x y HXY x' y' HX'Y'.
-  unfold lt; unfold eq in *.
-  elim HXY; intros HXYF HXYS.
-  elim HX'Y'; intros HX'Y'F HX'Y'S.
-  clear HXY; clear HX'Y'.
-  unfold Pos.eq in *.
-  case_eq (Pos.eqb (fstpp(x)) (fstpp(x'))); intro HXX'F.
-
-    assert (HYY'F : Pos.eqb (fstpp(y)) (fstpp(y')) = true).
-    apply Pos.eqb_eq in HXX'F.
-    apply Pos.eqb_eq.
-    rewrite <- HXYF.
-    rewrite <- HX'Y'F.
-    assumption.
-
-    rewrite HYY'F.
-    case_eq (Pos.eqb (sndpp(x)) (sndpp(x'))); intro HXX'S.
-
-      apply Pos.eqb_eq in HXX'S.
-      assert (HYY'S : Pos.eqb (sndpp(y)) (sndpp(y')) = true).
-      apply Pos.eqb_eq.
-      rewrite <- HXYS.
-      rewrite <- HX'Y'S.
-      assumption.
-
-      apply Pos.eqb_eq in HYY'S.
-      rewrite HYY'S.
-      rewrite HXX'S.
-      rewrite HX'Y'S.
-      intuition.
-
-      rewrite HXYS.
-      rewrite HX'Y'S.
-      intuition.
-
-    assert (HYY'F : Pos.eqb (fstpp(y)) (fstpp(y')) = false).
-    rewrite <- HXYF.
-    rewrite <- HX'Y'F.
-    assumption.
-
-    rewrite HYY'F.
-    rewrite HXYF.
-    rewrite HX'Y'F.
-    intuition.
- Qed.
-
-  Instance lt_strorder : StrictOrder lt.
-  Proof.
-  apply Build_StrictOrder.
-  apply lt_irrefl.
-  apply lt_trans.
- Qed.
-
-  Definition compare t1 t2 :=
-    let ft1 := fstpp(t1) in
-    let ft2 := fstpp(t2) in
-    let st1 := sndpp(t1) in
-    let st2 := sndpp(t2) in
-    match (Pos.compare ft1 ft2) with
-      | Lt => Lt
-      | Eq => Pos.compare st1 st2
-      | Gt => Gt
-    end.
-
-  Lemma compare_spec : forall t1 t2, CompSpec eq lt t1 t2 (compare t1 t2).
-  Proof.
-  intros t1 t2.
-  case_eq (Pos.eqb (fstpp(t1)) (fstpp(t2))); intro HF.
-
-    apply Pos.eqb_eq in HF.
-    case_eq (Pos.eqb (sndpp(t1)) (sndpp(t2))); intro HS.
-
-      apply Pos.eqb_eq in HS.
-      unfold CompSpec.
-
-      assert (HC : compare t1 t2 = Eq).
-      unfold compare.
-
-      assert (HCF : Pos.compare (fstpp(t1)) (fstpp(t2)) = Eq).
-      unfold Pos.compare.
-      rewrite HF.
-      apply Pos.compare_cont_refl.
-
-      assert (HCS : Pos.compare (sndpp(t1)) (sndpp(t2)) = Eq).
-      unfold Pos.compare.
-      rewrite HS.
-      apply Pos.compare_cont_refl.
-
-      rewrite HCF; rewrite HCS.
-      intuition.
-
-      rewrite HC.
-      apply CompEq.
-      unfold eq.
-      rewrite HF; rewrite HS; split; intuition.
-
-      case_eq (Pos.ltb (sndpp(t1)) (sndpp(t2))); intro HLS.
-
-        assert (HC : compare t1 t2 = Lt).
-        unfold compare.
-
-        assert (HCF : Pos.compare (fstpp(t1)) (fstpp(t2)) = Eq).
-        unfold Pos.compare.
-        rewrite HF.
-        apply Pos.compare_cont_refl.
-
-        assert (HCS : Pos.compare (sndpp(t1)) (sndpp(t2)) = Lt).
-        unfold Pos.compare.
-        apply Pos.ltb_lt in HLS.
-        apply Pnat.nat_of_P_lt_Lt_compare_complement_morphism.
-        apply Pnat.Pos2Nat.inj_lt.
-        assumption.
-
-        rewrite HCF; rewrite HCS.
-        intuition.
-
-        rewrite HC.
-        apply CompLt.
-        unfold lt.
-        apply Pos.eqb_eq in HF.
-        rewrite HF.
-        apply Pos.ltb_lt in HLS.
-        assumption.
-
-        assert (HLS2 : Pos.ltb (sndpp(t2)) (sndpp(t1)) = true).
-        apply Pos.ltb_nlt in HLS.
-        apply Pos.le_nlt in HLS.
-        apply Pos.lt_eq_cases in HLS.
-        elim HLS; intro HLS2.
-        apply Pos.ltb_lt.
-        assumption.
-        apply Pos.eqb_neq in HS.
-        rewrite HLS2 in HS.
-        intuition.
-
-        assert (HC : compare t1 t2 = Gt).
-        unfold compare.
-
-        assert (HCF : Pos.compare (fstpp(t1)) (fstpp(t2)) = Eq).
-        unfold Pos.compare.
-        rewrite HF.
-        apply Pos.compare_cont_refl.
-
-        assert (HCS : Pos.compare (sndpp(t1)) (sndpp(t2)) = Gt).
-        unfold Pos.compare.
-        apply Pos.ltb_lt in HLS2.
-        apply Pnat.nat_of_P_gt_Gt_compare_complement_morphism.
-        apply Pnat.Pos2Nat.inj_gt.
-        apply Pos.gt_lt_iff.
-        assumption.
-
-        rewrite HCF; rewrite HCS.
-        intuition.
-
-        rewrite HC.
-        apply CompGt.
-        unfold lt.
-        apply Pos.eqb_eq in HF.
-        rewrite Pos.eqb_sym in HF.
-        rewrite HF.
-        apply Pos.ltb_lt in HLS2.
-        assumption.
-
-      case_eq (Pos.ltb (fstpp(t1)) (fstpp(t2))); intro HLF.
-
-        assert (HC : compare t1 t2 = Lt).
-        unfold compare.
-
-        assert (HCF : Pos.compare (fstpp(t1)) (fstpp(t2)) = Lt).
-        unfold Pos.compare.
-        apply Pos.ltb_lt in HLF.
-        apply Pnat.nat_of_P_lt_Lt_compare_complement_morphism.
-        apply Pnat.Pos2Nat.inj_lt.
-        assumption.
-
-        rewrite HCF.
-        intuition.
-
-        rewrite HC.
-        apply CompLt.
-        unfold lt.
-        rewrite HF.
-        apply Pos.ltb_lt in HLF.
-        assumption.
-
-        assert (HLF2 : Pos.ltb (fstpp(t2)) (fstpp(t1)) = true).
-        apply Pos.ltb_nlt in HLF.
-        apply Pos.le_nlt in HLF.
-        apply Pos.lt_eq_cases in HLF.
-        elim HLF; intro HLF2.
-        apply Pos.ltb_lt.
-        assumption.
-        apply Pos.eqb_neq in HF.
-        rewrite HLF2 in HF.
-        intuition.
-
-        assert (HC : compare t1 t2 = Gt).
-        unfold compare.
-
-        assert (HCF : Pos.compare (fstpp(t1)) (fstpp(t2)) = Gt).
-        unfold Pos.compare.
-        apply Pos.ltb_lt in HLF2.
-        apply Pnat.nat_of_P_gt_Gt_compare_complement_morphism.
-        apply Pnat.Pos2Nat.inj_gt.
-        apply Pos.gt_lt_iff.
-        assumption.
-
-        rewrite HCF.
-        intuition.
-
-        rewrite HC.
-        apply CompGt.
-        unfold lt.
-        rewrite Pos.eqb_sym in HF.
-        rewrite HF.
-        apply Pos.ltb_lt in HLF2.
-        assumption.
- Qed.
-
-End SetOfPairsOfPositiveOrderedType.
-
-Module SP := MSetList.Make SetOfPairsOfPositiveOrderedType.
 (*
-Module SP := MSetAVL.Make SetOfPairsOfPositiveOrderedType.
-*)
+Global Instance  SetOfSetsOfPairsOfPositives : OrderedType.
+Proof.
+exact (Build_OrderedType (@Equal SP) (@equal SP) (@lt_set SP) (@compare_set SP)
+                         (@equal_Equal SP)
+                         (@Equal_refl SP)
+                         (@Equal_sym SP)
+                         (@Equal_trans SP)
+                         (@lt_set_trans SP)
+                         (@lt_set_not_Equal SP)
+                         (@Compare_set SP)).
+Qed.
 
-Module SPWP := WPropertiesOn SetOfPairsOfPositiveOrderedType SP.
-
-Module SetOfSetsOfPairsOfPositiveOrderedType <: OrderedType.
-
-  Definition t := SP.t.
-
-  Definition eq := SP.Equal.
-
-  Definition eq_equiv := SP.eq_equiv.
-
-  Definition eqb := SP.equal.
-
-  Definition eqb_eq := SP.equal_spec.
-
-  Definition lt := SP.lt.
-
-  Instance lt_compat : Proper (eq==>eq==>iff) lt.
-  Proof.
-  apply SP.lt_compat.
- Qed.
-
-  Instance lt_strorder : StrictOrder lt.
-  Proof.
-  apply SP.lt_strorder.
- Qed.
-
-  Definition compare := SP.compare.
-
-  Definition compare_spec := SP.compare_spec.
-
-  Definition eq_dec := SP.eq_dec.
-
-End SetOfSetsOfPairsOfPositiveOrderedType.
-
-Module SSP := MSetList.Make SetOfSetsOfPairsOfPositiveOrderedType.
-
+Require Import MSets.
 
 Module PosOrder <: TotalLeBool.
 
@@ -554,7 +293,7 @@ intro l; induction l.
       by (apply Permutation.Permutation_in with (a0 :: l'); apply Permutation.Permutation_sym in HPerm;assumption).
     clear HIna'; clear HIna0'; apply in_inv in HIna; apply in_inv in HIna0.
     elim HIna; clear HIna; intro HIna; elim HIna0; clear HIna0; intro HIna0;
-    try (rewrite HIna in *); try (rewrite <- HIna0 in *).
+    try (rewrite HIna in *)(*; try (rewrite <- HIna0 in *)(*.
 
       assert (HPerm' : Permutation.Permutation l l')
         by (apply Permutation.Permutation_app_inv_l with (a :: nil); simpl; assumption).
@@ -1308,3 +1047,4 @@ TODO: try to see if using sorted lists would not make the tactic faster.
   Proof. intros; simpl; elim (eqST_dec x y);intro;intuition. Qed.
 
 End Set_of_tuple_of_positive.
+*)
