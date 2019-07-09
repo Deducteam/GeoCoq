@@ -4,14 +4,6 @@ Require Import NArith.
 Require Import Recdef.
 Require Import GeoCoq.Utils.sets.
 
-(*
-Module SSWP := WPropertiesOn SetOfSetsOfPositiveOrderedType SS.
-
-Module SSWEqP := WEqPropertiesOn SetOfSetsOfPositiveOrderedType SS.
-
-Module SPWEqP := WEqPropertiesOn SetOfPairsOfPositiveOrderedType SP.
->>>>>>> Compatiblity fixes.
-
 Definition pick_line (s : (@elt SS)) (sp : (@TCSets.t SP)) :=
   (@exists_ SP) (fun p => ((@mem S) (fstpp p) s) && ((@mem S) (sndpp p) s)) sp.
 
@@ -87,6 +79,7 @@ Definition pick_lines (ss : (@TCSets.t SS)) (sp : (@TCSets.t SP))
                              | _    => true
                            end) ss) with
     | None    => None
+
     | Some s1 => pick_lines_aux s1 ((@remove SS) s1 ss) sp
   end.
 
