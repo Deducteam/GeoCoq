@@ -1,4 +1,6 @@
+(*
 Require Export GeoCoq.Utils.arity.
+*)
 
 (** Minimal set of lemmas needed to use the ColR tactic. *)
 Class Col_theory (COLTpoint : Type) (CTCol: COLTpoint -> COLTpoint -> COLTpoint -> Prop) :=
@@ -10,6 +12,7 @@ Class Col_theory (COLTpoint : Type) (CTCol: COLTpoint -> COLTpoint -> COLTpoint 
              X <> Y -> CTCol X Y A -> CTCol X Y B -> CTCol X Y C -> CTCol A B C
 }.
 
+(*
 Class Arity :=
 {
   COINCpoint : Type;
