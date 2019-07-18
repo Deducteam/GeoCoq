@@ -157,7 +157,7 @@ destruct (Pos.compare_spec (sndpp(t1)) (sndpp(t2))) as [E'|L|L];
 [apply CompEq; unfold eq|apply CompLt; unfold lt|apply CompGt; unfold lt];
 [split; auto|case_eq (Pos.eqb (fstpp(t1)) (fstpp(t2))); auto; intro HF|
              case_eq (Pos.eqb (fstpp(t2)) (fstpp(t1))); auto; intro HF];
-apply Pos.eqb_neq in HF; intuition.
+[|apply Logic.eq_sym in E]; apply Pos.eqb_neq in HF; intuition.
 Qed.
 
 Global Instance SP : OrderedType.
