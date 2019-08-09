@@ -1,8 +1,6 @@
 Require Import GeoCoq.Tarski_dev.Ch09_plane.
 Require Import NArith.
-(*
 Require Import GeoCoq.Utils.sets.
-*)
 Require Import GeoCoq.Meta_theory.Models.tarski_to_coinc_theory_for_cop.
 Require Import GeoCoq.Tactics.Coinc.CoincR.
 
@@ -26,7 +24,7 @@ Lemma collect_coincs_for_cop : forall A B C D pa pb pc pd ss interp,
   ss_ok_for_cop ss interp ->
   ss_ok_for_cop (SS.add (@CPToSS 4 (pa, (pb, (pc, pd)))) ss) interp.
 Proof.
-intros A B C D pa pb pc pd ss interp HCol HA HB HC HD HSS.
+intros A B C D pa pb pc pd ss interp HCop HA HB HC HD HSS.
 apply (@collect_coincs Tarski_is_a_Arity_for_cop
                        Tarski_is_a_Coinc_predicates_for_cop);
 [apply Tarski_is_a_Coinc_theory_for_cop|simpl|auto].

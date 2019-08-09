@@ -41,7 +41,7 @@ tauto.
 Qed.
 
 Lemma eq_or_neq : forall A B,
-  eq A B \/ neq A B.
+ eq A B \/ neq A B.
 Proof.
 intros;unfold neq;tauto.
 Qed.
