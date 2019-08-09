@@ -1,8 +1,6 @@
 Require Import GeoCoq.Tarski_dev.Ch09_plane.
 Require Import NArith.
-(*
 Require Import GeoCoq.Utils.sets.
-*)
 Require Import GeoCoq.Meta_theory.Models.tarski_to_coinc_theory_for_cop.
 Require Import GeoCoq.Tactics.Coinc.CoincR.
 

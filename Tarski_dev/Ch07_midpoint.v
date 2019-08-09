@@ -1,5 +1,4 @@
 Require Export GeoCoq.Tarski_dev.Ch06_out_lines.
-
 Require Export GeoCoq.Tarski_dev.Tactics.ColR.
 
 Ltac not_exist_hyp_comm A B := not_exist_hyp (A<>B);not_exist_hyp (B<>A).

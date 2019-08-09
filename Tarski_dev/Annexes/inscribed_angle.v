@@ -47,7 +47,7 @@ Lemma bet_suma__suma : forall A B C D E F G H I, G <> H -> H <> I ->
   Bet G H I -> SumA A B C B C A D E F -> SumA D E F C A B G H I.
 Proof.
   intros A B C D E F G H I HGH HHI HBet HSuma.
-  suma.assert_diffs.
+  assert_diffs.
   destruct (bet__trisuma A B C G H I) as [D' [E' [F' []]]]; auto.
   apply (conga3_suma__suma D' E' F' C A B G H I); try apply conga_refl; auto.
   apply (suma2__conga A B C B C A); assumption.

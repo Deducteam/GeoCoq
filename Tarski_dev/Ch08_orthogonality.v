@@ -4,11 +4,8 @@ We choose to use ColR as it is faster than CoincR.
 *)
 (*
 Require Export GeoCoq.Tactics.Coinc.CoincR_for_col.
- *)
-(*
+*)
 Require Export GeoCoq.Tactics.Coinc.ColR.
- *)
-
 
 Ltac not_exist_hyp_perm_ncol A B C := not_exist_hyp (~ Col A B C); not_exist_hyp (~ Col A C B);
                                  not_exist_hyp (~ Col B A C); not_exist_hyp (~ Col B C A);

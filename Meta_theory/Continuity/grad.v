@@ -1,7 +1,5 @@
 Require Import GeoCoq.Tarski_dev.Ch08_orthogonality.
-
 Require Import Relations.
-Require Import Setoid.
 
 Section Grad.
 
@@ -25,8 +23,6 @@ Proof.
   apply HAB.
   apply between_identity, grad__bet; trivial.
 Qed.
-
-
 
 Lemma grad_neq__neq12 : forall A B C, Grad A B C -> A <> C -> A <> B.
 Proof.
@@ -206,15 +202,6 @@ Inductive GradExpInv : Tpoint -> Tpoint -> Tpoint -> Prop :=
   | gradexpinv_stab : forall A B B' C, Bet A B' B -> Cong A B' B' B -> GradExpInv A B C ->
                     GradExpInv A B' C.
 
-(*
-Inductive clos_refl_trans_n1 (A : Type) (R : relation A) (x : A) : A -> Prop :=
-  rtn1_refl : clos_refl_trans_n1 A R x x
-| rtn1_trans : forall y z : A,
-    R y z -> clos_refl_trans_n1 A R x y -> clos_refl_trans_n1 A R x z.
- *)
-
-
-
 Lemma gradexp_clos_trans : forall A B C, GradExp A B C <->
   clos_refl_trans_n1 Tpoint (fun X Y => Midpoint X A Y) B C.
 Proof.
@@ -222,8 +209,6 @@ Proof.
     apply Relation_Operators.rtn1_trans with C; [split|]; assumption.
     apply gradexp_stab with y; Between; Cong.
 Qed.
-
-
 
 Lemma gradexpinv_clos_trans : forall A B C, GradExpInv A B C <->
   clos_refl_trans_1n Tpoint (fun X Y => Midpoint X A Y) B C.
@@ -236,11 +221,9 @@ Qed.
 Lemma gradexp__gradexpinv : forall A B C, GradExp A B C <-> GradExpInv A B C.
 Proof.
   intros.
-  split.
-  - intros. apply gradexp_clos_trans in H.
-    apply gradexpinv_clos_trans. apply clos_rt_rt1n_iff. apply clos_rt_rtn1_iff in H. easy.
-  - intros. apply gradexpinv_clos_trans in H.
-    apply gradexp_clos_trans. apply clos_rt_rtn1_iff. apply clos_rt_rt1n_iff in H. easy.
+  rewrite gradexp_clos_trans, gradexpinv_clos_trans.
+  rewrite <- clos_rt_rt1n_iff, <- clos_rt_rtn1_iff.
+  reflexivity.
 Qed.
 
 (** D is the last graduation of AB before or equal to C, and E the first graduation after C *)
@@ -278,9 +261,9 @@ Proof.
   induction HR1; rename A0 into P, B into Q; intros.
   { destruct (midpoint_existence A B) as [C []].
     exists C; split.
-    - apply gradexp__gradexpinv.
+      rewrite gradexp__gradexpinv.
       apply gradexpinv_stab with B; auto; constructor.
-    - apply le3456_lt__lt with A B; trivial.
+    apply le3456_lt__lt with A B; trivial.
     split; Le.
     intro; assert (C = B) by (apply (between_cong A); assumption).
     treat_equalities; auto.
