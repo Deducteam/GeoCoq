@@ -210,6 +210,7 @@ Proof.
 intro cp.
 unfold OCPAux.
 assert (HPerm := Permuted_sort (CPToList cp)).
+Check Permuted_sort.
 apply Permutation.Permutation_length in HPerm.
 rewrite <- HPerm.
 apply Logic.eq_sym.
@@ -314,6 +315,7 @@ Proof.
 intros cp.
 unfold OCP.
 unfold OCPAux.
+SearchAbout eq_rect.
 elim_eq_rect; simpl.
 rewrite CPLOK.
 apply (@StronglySorted_sort PosOrder).
@@ -512,6 +514,7 @@ Proof.
 intros l Hl; induction l; [discriminate|].
 induction l; [exists a; reflexivity|discriminate].
 Qed.
+>>>>>>> some progress
 
 Lemma lengthAtLeastOne : forall (l : list positive) n,
   length l = (Datatypes.S n) -> exists a0 l0, l = a0 :: l0.

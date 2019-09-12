@@ -853,3 +853,4 @@ Definition Tagged P : Prop := P.
 
 Lemma PropToTagged : forall P : Prop, P -> Tagged P.
 Proof. trivial. Qed.
+*)

@@ -79,7 +79,6 @@ Definition pick_lines (ss : (@TCSets.t SS)) (sp : (@TCSets.t SP))
                              | _    => true
                            end) ss) with
     | None    => None
-
     | Some s1 => pick_lines_aux s1 ((@remove SS) s1 ss) sp
   end.
 
