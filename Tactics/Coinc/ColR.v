@@ -2,7 +2,7 @@ Require Import Bool.
 Require Import Morphisms.
 Require Import NArith.
 Require Import Recdef.
-Require Import sets.
+Require Import GeoCoq.Utils.sets.
 
 Definition pick_line (s : (@elt SS)) (sp : (@TCSets.t SP)) :=
   (@exists_ SP) (fun p => ((@mem S) (fstpp p) s) && ((@mem S) (sndpp p) s)) sp.
@@ -67,7 +67,7 @@ Definition pick_lines_aux (s1 : (@elt SS))
                           : (option ((@elt SS) * (@elt SS))) :=
   match ((exists_witness (fun s2 => let i := (@inter S) s1 s2 in
                                     pick_line i sp)) ss) with
-    | None => None
+    | None    => None
     | Some s2 => Some(s1,s2)
   end.
 
@@ -76,17 +76,17 @@ Definition pick_lines (ss : (@TCSets.t SS)) (sp : (@TCSets.t SP))
   match (exists_witness (fun s =>
                            match (pick_lines_aux s ((@remove SS) s ss) sp) with
                              | None => false
-                             | _ => true
+                             | _    => true
                            end) ss) with
-    | None => None
+    | None    => None
     | Some s1 => pick_lines_aux s1 ((@remove SS) s1 ss) sp
   end.
 
 Definition eqop (p1 p2 : option (@elt SS)) :=
   match p1,p2 with
-    | None, None => True
+    | None   , None    => True
     | Some s1, Some s2 => True
-    | _, _ => False
+    | _      , _       => False
   end.
 
 Lemma proper_2 : forall (f1 f2 : (@elt SS) -> bool) (s1 s2 : (@TCSets.t SS)),
@@ -96,14 +96,11 @@ Lemma proper_2 : forall (f1 f2 : (@elt SS) -> bool) (s1 s2 : (@TCSets.t SS)),
   (@Equal SS) s1 s2 ->
   eqop (exists_witness f1 s1) (exists_witness f2 s2).
 Proof.
-intros f1 f2 s1 s2.
-intros H1 H2 H3 H4.
-unfold eqop.
-unfold exists_witness in *.
-assert ((@Equal SS) ((@filter SS) f1 s1) ((@filter SS) f2 s2))
+intros f1 f2 s1 s2  H1 H2 H3 H4; unfold eqop; unfold exists_witness in *.
+assert (Equal (filter f1 s1) (filter f2 s2))
   by (apply filter_ext; assumption).
-case_eq ((@choose SS) ((@filter SS) f1 s1));
-case_eq ((@choose SS) ((@filter SS) f2 s2)); try solve [intuition];
+case_eq (choose (filter f1 s1));
+case_eq (choose (filter f2 s2)); try solve [intuition];
 [intros HCN e HCS|intros e HCS HCN]; apply choose_spec1 in HCS;
 apply choose_spec2 in HCN; unfold Equal, Equal_aux in H;
 [rewrite H in HCS|rewrite <- H in HCS]; apply empty_is_empty_1 in HCN;
@@ -126,10 +123,8 @@ intros x2 y2 HXY2.
 intros x3 y3 HXY3.
 unfold pick_lines_aux.
 rewrite HXY3.
-assert (eqop (exists_witness
-                (fun s2 : (@elt SS) => pick_line ((@inter S) x1 s2) y3) x2)
-             (exists_witness
-                (fun s2 : (@elt SS) => pick_line ((@inter S) y1 s2) y3) y2)).
+assert (eqop (exists_witness (fun s2 => pick_line (inter x1 s2) y3) x2)
+             (exists_witness (fun s2 => pick_line (inter y1 s2) y3) y2)).
   {
   apply proper_2; auto; try apply proper_1.
   intro; apply proper_0; try reflexivity.
@@ -145,8 +140,8 @@ simpl in *; rewrite HCS in H; rewrite HCN in H; simpl in *; intuition.
 Qed.
 
 Lemma pick_lines_ok_1 : forall s1 s2 ss sp,
-  pick_lines ss sp = Some(s1,s2) ->
-  (@In SS) s1 ss.
+  pick_lines ss sp = Some (s1,s2) ->
+  In s1 ss.
 Proof.
 intros s1 s2 ss sp H.
 unfold pick_lines in H.
@@ -180,7 +175,7 @@ rewrite Hp, HF in E'; unfold eqopp in E'; intuition.
 Qed.
 
 Lemma pick_lines_ok_2 : forall s1 s2 ss sp,
-  pick_lines ss sp = Some(s1,s2) ->
+  pick_lines ss sp = Some (s1,s2) ->
   (@In SS) s2 ((@remove SS) s1 ss).
 Proof.
 intros s1 s2 ss sp H.
@@ -203,11 +198,11 @@ apply exists_witness_ok with
 Qed.
 
 Function identify_lines (ss : (@TCSets.t SS)) (sp : (@TCSets.t SP))
-         {measure cardinal ss}: (@TCSets.t SS) :=
+         {measure cardinal ss} : (@TCSets.t SS) :=
   let lines := pick_lines ss sp in
     match lines with
-      |None => ss
-      |Some (s1,s2) =>
+      | None         => ss
+      | Some (s1,s2) =>
          let auxsetofsets := (@remove SS) s2 ((@remove SS) s1 ss) in
          let auxset := (@union S) s1 s2 in
          let newss := (@add SS) auxset auxsetofsets in
@@ -332,18 +327,15 @@ destruct HEq as [HEq|HEq];
 rewrite <- ((@mem_m S) _ _ (TCSets.eq_refl p1) _ _ HEq) in Hmemp1.
 rewrite <- ((@mem_m S) _ _ (TCSets.eq_refl p2) _ _ HEq) in Hmemp2.
 rewrite <- ((@mem_m S) _ _ (TCSets.eq_refl p3) _ _ HEq) in Hmemp3.
-rewrite <- ((@mem_m SS) _ _ HEq
-                        _ _ (Equal_refl ((@add SS) auxset
-                                                   auxsetofsets))) in Hmem.
-clear HEq; clear s.
+clear HEq; clear Hmem; clear s.
 unfold suitablepairofsets in Hs1s2; clear suitablepairofsets.
 unfold pick_lines in Hs1s2.
 case_eq (exists_witness
            (fun s : elt =>
               match pick_lines_aux s (remove s ss) sp with
                 | Some _ => true
-                | None => false
-              end) ss); try (intro HEW; rewrite HEW in *; discriminate).
+                | None   => false
+              end) ss); [|intro HEW; rewrite HEW in *; discriminate].
 intros e1 HEW; rewrite HEW in *; clear HEW.
 unfold pick_lines_aux in *.
 case_eq (exists_witness
@@ -708,7 +700,7 @@ Lemma collect_diffs :
   forall pa pb sp (interp :  positive -> COLTpoint),
   interp pa = A ->
   interp pb = B ->
-  sp_ok sp interp -> sp_ok (add (pa, pb) sp) interp.
+  sp_ok sp interp -> sp_ok ((@add SP) (pa, pb) sp) interp.
 Proof.
 intros A B HDiff pa pb sp interp HA HB HSP p Hp.
 apply mem_2, add_iff in Hp.

@@ -1,3 +1,4 @@
+(*
 Require Import GeoCoq.Tarski_dev.Ch09_plane.
 Require Import NArith.
 Require Import GeoCoq.Utils.sets.
@@ -144,4 +145,5 @@ Time Cop_refl Tpoint Col Coplanar.
 Qed.
 
 End Test.
+*)
 *)

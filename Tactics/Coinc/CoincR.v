@@ -1,3 +1,4 @@
+(*
 Require Import Recdef.
 Require Import NArith.
 Require Import Sorting.
@@ -1205,3 +1206,4 @@ Definition Tagged P : Prop := P.
 
 Lemma PropToTagged : forall P : Prop, P -> Tagged P.
 Proof. trivial. Qed.
+*)

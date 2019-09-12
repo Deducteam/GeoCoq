@@ -1145,6 +1145,12 @@ Proof.
 intros x y H s s' H'; rewrite (In_eq_iff s _ _ H); unfold In; auto.
 Qed.
 
+Instance Empty_m : Proper (Equal ==> iff) Empty.
+Proof.
+intros s s' H; split; intros HF a HIn; [|apply Equal_sym in H];
+apply (HF a); rewrite (In_m a a (eq_refl a) H); apply HIn.
+Qed.
+
 Instance mem_m : Proper (eq ==> Equal ==> Logic.eq) mem.
 Proof.
 intros x x' Hx s s' Hs; generalize (mem_iff s x).
@@ -1164,6 +1170,12 @@ rewrite !H, (In_m a a (eq_refl a) Hs); intuition.
   {
   assert (eq x' a) by (apply eq_trans with x; auto); intuition.
   }
+Qed.
+
+Instance is_empty_m : Proper (Equal ==> Logic.eq) is_empty.
+Proof.
+intros s s' H; generalize (is_empty_iff s); rewrite (Empty_m H).
+rewrite is_empty_iff; destruct (is_empty s); destruct (is_empty s'); intuition.
 Qed.
 
 Lemma filter_ext : forall (f f' : elt -> bool),
@@ -1315,6 +1327,32 @@ Lemma cardinal_fold : forall s (Hs : Ok s),
 Proof.
 intros; rewrite cardinal_spec; auto; rewrite fold_spec.
 symmetry; apply fold_left_length.
+Qed.
+
+Lemma cardinal_1_aux : forall s, Empty_aux s -> cardinal_aux s = 0.
+Proof.
+intros s H; rewrite cardinal_fold; [apply fold_1|]; auto; try congruence;
+[exact eq_equivalence| |]; unfold Empty_aux in H; revert H; elim s;
+try (intros a l _ H; exfalso; apply (H a), InP, InA_cons_hd, eq_refl);
+intros _; apply isok_iff, Sorted_nil.
+Qed.
+
+Lemma cardinal_Empty : forall s, Empty s <-> cardinal s = 0.
+Proof.
+intros [s Hs]; split; [apply cardinal_1_aux|].
+revert Hs; elim s; [intros; apply empty_spec|intros a l _ Hs HF].
+unfold cardinal in HF; simpl in *; discriminate.
+Qed.
+
+Lemma cardinal_inv_2 : forall s n, cardinal s = S n -> { x : elt | In x s }.
+Proof.
+intros [s Hs] n; destruct s; [unfold cardinal; simpl; discriminate|].
+exists e; apply InP, InA_cons_hd, eq_refl.
+Qed.
+
+Lemma cardinal_inv_2b : forall s, cardinal s <> 0 -> { x : elt | In x s }.
+Proof.
+intro; generalize (@cardinal_inv_2 s); destruct cardinal; [intuition|eauto].
 Qed.
 
 Lemma remove_fold_1 : forall (A : Type) (eqA : A -> A -> Prop) (f : elt -> A -> A),

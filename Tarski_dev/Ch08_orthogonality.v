@@ -197,10 +197,12 @@ repeat
      let T := fresh in assert (T := l7_17_bis P P' A B H H2); smart_subst A
 end.
 
-Ltac CongR :=
+Ltac CongR := eCong.
+(*
  let tpoint := constr:(Tpoint) in
  let cong := constr:(Cong) in
    treat_equalities; unfold Midpoint in *; spliter; Cong; Cong_refl tpoint cong.
+*)
 
 Ltac ColR :=
  let tpoint := constr:(Tpoint) in

@@ -2,9 +2,10 @@ Require Import Arith.
 Require Import Bool.
 Require Import NArith.
 Require Import Notations.
-Require Import Sorting.
 Require Export GeoCoq.Tactics.Coinc.tactics_axioms.
+Require Import Coq.Program.Equality.
 Require Export GeoCoq.Utils.TCSets.
+Require Import GeoCoq.Utils.Mergesort.
 
 Lemma Pos_lt_not_eq : forall x y,
   Pos.lt x y -> ~ Pos.eq x y.
@@ -172,8 +173,7 @@ exact (Build_OrderedType eq eqb lt compare
                          Compare).
 Defined.
 
-(*
-Global Instance  SetOfSetsOfPairsOfPositives : OrderedType.
+Global Instance  SSP : OrderedType.
 Proof.
 exact (Build_OrderedType (@Equal SP) (@equal SP) (@lt_set SP) (@compare_set SP)
                          (@equal_Equal SP)
@@ -183,11 +183,10 @@ exact (Build_OrderedType (@Equal SP) (@equal SP) (@lt_set SP) (@compare_set SP)
                          (@lt_set_trans SP)
                          (@lt_set_not_Equal SP)
                          (@Compare_set SP)).
-Qed.
+Defined.
+(*
+Global Instance PosOrder : TotalLeBool.
 
-Require Import MSets.
-
-Module PosOrder <: TotalLeBool.
 
   Definition t := positive.
 
@@ -236,16 +235,21 @@ End PosOrder.
 
 Module Import PosSort := Sort PosOrder.
 
-Definition OCPAux {n : nat} (cp : cartesianPower positive (S (S n))) := (PosSort.sort (CPToList cp)).
+Definition OCPAux {n : nat}
+           (cp : cartesianPower positive (Datatypes.S (Datatypes.S n))) :=
+  (PosSort.sort (CPToList cp)).
 
-Lemma OCPALengthOK {n : nat} : forall (cp : cartesianPower positive (S (S n))), (length (OCPAux cp)) = (S (S n)).
+Lemma OCPALengthOK {n : nat} :
+  forall (cp : cartesianPower positive (Datatypes.S (Datatypes.S n))),
+    (length (OCPAux cp)) = (Datatypes.S (Datatypes.S n)).
 Proof.
 intro cp.
 unfold OCPAux.
 assert (HPerm := Permuted_sort (CPToList cp)).
+Check Permuted_sort.
 apply Permutation.Permutation_length in HPerm.
 rewrite <- HPerm.
-apply eq_sym.
+apply Logic.eq_sym.
 apply lengthOfCPToList.
 Defined.
 
@@ -331,7 +335,9 @@ intro l; induction l.
       rewrite HPerm'; reflexivity.
 Qed.
 
-Definition OCP {n : nat} (cp : cartesianPower positive (S (S n))) : cartesianPower positive (S (S n)).
+Definition OCP {n : nat}
+           (cp : cartesianPower positive (Datatypes.S (Datatypes.S n))) :
+  cartesianPower positive (Datatypes.S (Datatypes.S n)).
 Proof.
 assert (H := OCPALengthOK cp).
 rewrite <- H.
@@ -339,12 +345,13 @@ exact (ListToCP (OCPAux cp) (fst cp)).
 Defined.
 
 Lemma OCPSortedAux {n : nat} :
-  forall (cp : cartesianPower positive (S (S n))),
+  forall (cp : cartesianPower positive (Datatypes.S (Datatypes.S n))),
   StronglySorted (fun x x0 : positive => is_true (x <=? x0)%positive) (CPToList (OCP cp)).
 Proof.
 intros cp.
 unfold OCP.
 unfold OCPAux.
+SearchAbout eq_rect.
 elim_eq_rect; simpl.
 rewrite CPLOK.
 apply StronglySorted_sort.
@@ -358,7 +365,7 @@ transitivity x2; assumption.
 Qed.
 
 Lemma OCPPerm {n : nat} :
-  forall (cp : cartesianPower positive (S (S n))),
+  forall (cp : cartesianPower positive (Datatypes.S (Datatypes.S n))),
   Permutation.Permutation (CPToList cp) (CPToList (OCP cp)).
 Proof.
 intro cp.
@@ -370,7 +377,8 @@ apply Permuted_sort.
 Qed.
 
 Lemma CPLOCPTlOK {n : nat} :
-  forall (cp : cartesianPower positive (S (S (S n)))),
+  forall (cp : cartesianPower positive
+                              (Datatypes.S (Datatypes.S (Datatypes.S n)))),
   headCP cp = headCP (OCP cp) ->
   CPToList (OCP (tailCP cp)) = CPToList (tailCP (OCP cp)).
 Proof.
@@ -402,7 +410,8 @@ apply PermSorted.
 Qed.
 
 Lemma OCPTlOK {n : nat} :
-  forall (cp : cartesianPower positive (S (S (S n)))),
+  forall (cp : cartesianPower positive
+                              (Datatypes.S (Datatypes.S (Datatypes.S n)))),
   headCP cp = headCP (OCP cp) ->
   OCP (tailCP cp) = tailCP (OCP cp).
 Proof.
@@ -411,7 +420,8 @@ apply CPLOCPTlOK in Hhd.
 apply CPLCP; assumption.
 Qed.
 
-Lemma InCPOCP {n : nat} : forall p (cp : cartesianPower positive (S (S n))),
+Lemma InCPOCP {n : nat} :
+  forall p (cp : cartesianPower positive (Datatypes.S (Datatypes.S n))),
   InCP p cp <-> InCP p (OCP cp).
 Proof.
 intros p cp.
@@ -435,10 +445,10 @@ induction n.
 
   clear IHn.
   rewrite CPLOK.
-  set (sscp := (nat_rect (fun n : nat => cartesianPower positive (S n) -> list positive)
+  set (sscp := (nat_rect (fun n : nat => cartesianPower positive (Datatypes.S n) -> list positive)
                        (fun cp0 : cartesianPower positive 1 => cp0 :: nil)
-                       (fun (n : nat) (IHn : cartesianPower positive (S n) -> list positive)
-                       (cp0 : cartesianPower positive (S (S n))) =>
+                       (fun (n : nat) (IHn : cartesianPower positive (Datatypes.S n) -> list positive)
+                       (cp0 : cartesianPower positive (Datatypes.S (Datatypes.S n))) =>
                        fst cp0 :: IHn (tailCP cp0)) n (tailCP (snd cp)))).
   assert (HPerm := Permuted_sort (fst cp :: fst (snd cp) :: sscp)).
   split; intro HIn.
@@ -467,7 +477,6 @@ induction n.
     rename HInOK into HIn.
     assumption.
 Qed.
-
 
 Section Set_of_tuple_of_positive.
 
@@ -540,7 +549,7 @@ Section Set_of_tuple_of_positive.
             apply IHl1 with l2; assumption.
   Qed.
 
-  Definition tST := cartesianPower positive (S (S n)).
+  Definition tST := cartesianPower positive (Datatypes.S (Datatypes.S n)).
 
   Definition eqST (cp1 cp2 : tST) :=
     eqList (PosSort.sort (CPToList cp1)) (PosSort.sort (CPToList cp2)).
@@ -638,7 +647,7 @@ Section Set_of_tuple_of_positive.
   Qed.
 
   Lemma lengthAtLeastOne : forall (l : list positive) n,
-    length l = (S n) -> exists a0 l0, l = a0 :: l0.
+    length l = (Datatypes.S n) -> exists a0 l0, l = a0 :: l0.
   Proof.
     intros l n Hl.
     induction l.
@@ -649,9 +658,9 @@ Section Set_of_tuple_of_positive.
   Qed.
 
   Lemma ltListTrans : forall m x y z,
-    length x = (S m) ->
-    length y = (S m) ->
-    length z = (S m) ->
+    length x = (Datatypes.S m) ->
+    length y = (Datatypes.S m) ->
+    length z = (Datatypes.S m) ->
     ltList x y -> ltList y z -> ltList x z.
   Proof.
     intro m; induction m; intros x y z lx ly lz Hxy Hyz.
@@ -675,9 +684,9 @@ Section Set_of_tuple_of_positive.
 
         rewrite H; trivial.
 
-      assert (Hx := lengthAtLeastOne x (S m) lx); destruct Hx as [hdx [tlx Hx]].
-      assert (Hy := lengthAtLeastOne y (S m) ly); destruct Hy as [hdy [tly Hy]].
-      assert (Hz := lengthAtLeastOne z (S m) lz); destruct Hz as [hdz [tlz Hz]].
+      assert (Hx := lengthAtLeastOne x (Datatypes.S m) lx); destruct Hx as [hdx [tlx Hx]].
+      assert (Hy := lengthAtLeastOne y (Datatypes.S m) ly); destruct Hy as [hdy [tly Hy]].
+      assert (Hz := lengthAtLeastOne z (Datatypes.S m) lz); destruct Hz as [hdz [tlz Hz]].
       subst; simpl in *.
       assert (HEqxy := Pos.compare_eq hdx hdy).
       assert (HEqyz := Pos.compare_eq hdy hdz).
@@ -833,25 +842,25 @@ Section Set_of_tuple_of_positive.
     unfold lt.
     intros x y z Hxy Hyz.
 
-    assert (lx : (S (S n)) = (S (S n))) by reflexivity.
+    assert (lx : (Datatypes.S (Datatypes.S n)) = (Datatypes.S (Datatypes.S n))) by reflexivity.
     assert (lx' := lengthOfCPToList x).
-    assert (lx'' := sortOK (S (S n)) (CPToList x)).
+    assert (lx'' := sortOK (Datatypes.S (Datatypes.S n)) (CPToList x)).
     rewrite <- lx' in lx''; clear lx'.
     apply lx'' in lx; clear lx''.
 
-    assert (ly : (S (S n)) = (S (S n))) by reflexivity.
+    assert (ly : (Datatypes.S (Datatypes.S n)) = (Datatypes.S (Datatypes.S n))) by reflexivity.
     assert (ly' := lengthOfCPToList y).
-    assert (ly'' := sortOK (S (S n)) (CPToList y)).
+    assert (ly'' := sortOK (Datatypes.S (Datatypes.S n)) (CPToList y)).
     rewrite <- ly' in ly''; clear ly'.
     apply ly'' in ly; clear ly''.
 
-    assert (lz : (S (S n)) = (S (S n))) by reflexivity.
+    assert (lz : (Datatypes.S (Datatypes.S n)) = (Datatypes.S (Datatypes.S n))) by reflexivity.
     assert (lz' := lengthOfCPToList z).
-    assert (lz'' := sortOK (S (S n)) (CPToList z)).
+    assert (lz'' := sortOK (Datatypes.S (Datatypes.S n)) (CPToList z)).
     rewrite <- lz' in lz''; clear lz'.
     apply lz'' in lz; clear lz''.
 
-    assert (H := ltListTrans (S n) (sort (CPToList x)) (sort (CPToList y)) (sort (CPToList z))).
+    assert (H := ltListTrans (Datatypes.S n) (sort (CPToList x)) (sort (CPToList y)) (sort (CPToList z))).
     apply H; assumption.
   Qed.
 
