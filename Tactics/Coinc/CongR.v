@@ -236,7 +236,6 @@ destruct HEq as [HEq|HEq];
   unfold auxsetofsets in *; apply mem_2 in Hmem;
   do 2 (apply remove_3 in Hmem); apply mem_1; assumption].
 rewrite andb_true_iff in Hmemp; destruct Hmemp as [Hmemp12 Hmemp34].
-Check mem_m.
 rewrite <- ((@mem_m SP) _ _ ((@TCSets.eq_refl SP) (p1,p2)) _ _ HEq) in Hmemp12.
 rewrite <- ((@mem_m SP) _ _ ((@TCSets.eq_refl SP) (p3,p4)) _ _ HEq) in Hmemp34.
 clear HEq Hmem s.

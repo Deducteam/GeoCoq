@@ -2,10 +2,14 @@ Require Import Arith.
 Require Import Bool.
 Require Import NArith.
 Require Import Notations.
+Require Import Sorted.
 Require Export GeoCoq.Tactics.Coinc.tactics_axioms.
 Require Import Coq.Program.Equality.
 Require Export GeoCoq.Utils.TCSets.
 Require Import GeoCoq.Utils.Mergesort.
+Require Import List.
+
+Open Scope list_scope.
 
 Lemma Pos_lt_not_eq : forall x y,
   Pos.lt x y -> ~ Pos.eq x y.
@@ -45,7 +49,7 @@ Definition sndpp (pair : (positive * positive)) :=
     | (a,b) => Pos.max a b
   end.
 
-Definition t:= (positive * positive).
+Definition t := (positive * positive).
 
 Definition eq (t1 t2 : t) :=
   Pos.eq (fstpp(t1)) (fstpp(t2)) /\ Pos.eq (sndpp(t1)) (sndpp(t2)).
@@ -184,60 +188,20 @@ exact (Build_OrderedType (@Equal SP) (@equal SP) (@lt_set SP) (@compare_set SP)
                          (@lt_set_not_Equal SP)
                          (@Compare_set SP)).
 Defined.
-(*
+
+Lemma leb_total : forall p1 p2, Pos.leb p1 p2 = true \/ Pos.leb p2 p1 = true.
+Proof.
+intros; rewrite !Pos.leb_le.
+generalize (Pos.leb_le p1 p2); generalize (Pos.leb_gt p1 p2).
+case (Pos.leb p1 p2); [|intros; right; apply Pos.lt_le_incl]; intuition.
+Qed.
+
 Global Instance PosOrder : TotalLeBool.
-
-
-  Definition t := positive.
-
-  Definition leb := Pos.leb.
-
-  Lemma leb_total : forall p1 p2,
-    leb p1 p2 = true \/ leb p2 p1 = true.
-  Proof.
-  intros.
-  do 2 (rewrite Pos.leb_le).
-  do 2 (rewrite Pos.le_lteq).
-  assert (HElim := Pos.lt_total p1 p2).
-  elim HElim; clear HElim; intro HElim.
-  left; left; assumption.
-  elim HElim; clear HElim; intro HElim.
-  left; right; assumption.
-  right; left; assumption.
- Qed.
-
-  Lemma leb_dec : forall p1 p2,
-    leb p1 p2 = true \/ leb p1 p2 = false.
-  Proof.
-  intros.
-  elim Pos.eq_dec with p1 p2.
-
-    intro; subst.
-    left; apply POrderedType.Positive_as_DT.leb_refl.
-
-    intro HNeq.
-    elim leb_total with p1 p2; intro Hp1p2.
-
-      left; assumption.
-
-        right.
-        rewrite Positive_as_DT.leb_gt.
-        rewrite Positive_as_DT.leb_le in Hp1p2.
-        rewrite Pos.lt_eq_cases in Hp1p2.
-        elim Hp1p2; intro.
-
-          assumption.
-
-          subst; intuition.
- Qed.
-
-End PosOrder.
-
-Module Import PosSort := Sort PosOrder.
+Proof. exact (Build_TotalLeBool positive Pos.leb leb_total). Defined.
 
 Definition OCPAux {n : nat}
            (cp : cartesianPower positive (Datatypes.S (Datatypes.S n))) :=
-  (PosSort.sort (CPToList cp)).
+  (sort (CPToList cp)).
 
 Lemma OCPALengthOK {n : nat} :
   forall (cp : cartesianPower positive (Datatypes.S (Datatypes.S n))),
@@ -246,7 +210,6 @@ Proof.
 intro cp.
 unfold OCPAux.
 assert (HPerm := Permuted_sort (CPToList cp)).
-Check Permuted_sort.
 apply Permutation.Permutation_length in HPerm.
 rewrite <- HPerm.
 apply Logic.eq_sym.
@@ -297,7 +260,7 @@ intro l; induction l.
       by (apply Permutation.Permutation_in with (a0 :: l'); apply Permutation.Permutation_sym in HPerm;assumption).
     clear HIna'; clear HIna0'; apply in_inv in HIna; apply in_inv in HIna0.
     elim HIna; clear HIna; intro HIna; elim HIna0; clear HIna0; intro HIna0;
-    try (rewrite HIna in *)(*; try (rewrite <- HIna0 in *)(*.
+    try (rewrite HIna in *); try (rewrite <- HIna0 in *).
 
       assert (HPerm' : Permutation.Permutation l l')
         by (apply Permutation.Permutation_app_inv_l with (a :: nil); simpl; assumption).
@@ -351,10 +314,9 @@ Proof.
 intros cp.
 unfold OCP.
 unfold OCPAux.
-SearchAbout eq_rect.
 elim_eq_rect; simpl.
 rewrite CPLOK.
-apply StronglySorted_sort.
+apply (@StronglySorted_sort PosOrder).
 intros x1 x2 x3.
 unfold is_true.
 intros Hx1x2 Hx2x3.
@@ -373,7 +335,7 @@ unfold OCP.
 unfold OCPAux.
 elim_eq_rect; simpl.
 rewrite CPLOK.
-apply Permuted_sort.
+apply (@Permuted_sort PosOrder).
 Qed.
 
 Lemma CPLOCPTlOK {n : nat} :
@@ -435,8 +397,8 @@ induction n.
   assert (HPerm1 := Permuted_sort (CPToList cp)); simpl in HPerm1.
   assert (HPerm2 := HPerm1); apply Permutation.Permutation_sym in HPerm2.
   assert (HInOK : In p (sort (fst cp :: snd cp :: nil)) <-> In p (fst cp :: snd cp :: nil))
-    by (split; intro HIn; try (apply Permutation.Permutation_in with (sort (fst cp :: snd cp :: nil)); assumption);
-                          apply Permutation.Permutation_in with (fst cp :: snd cp :: nil); assumption).
+    by (split; intro HIn; [apply (Permutation.Permutation_in _ HPerm2 HIn)|];
+        apply (Permutation.Permutation_in _ HPerm1 HIn)).
   split; intro HIn.
 
     apply HInOK; simpl; assumption.
@@ -480,529 +442,270 @@ Qed.
 
 Section Set_of_tuple_of_positive.
 
-  Context {Ar : Arity}.
-
-  Fixpoint eqList (l1 l2 : list positive) :=
-    match l1, l2 with
-      | nil, nil => True
-      | (hd1 :: tl1), (hd2 :: tl2) => (Pos.eq hd1 hd2) /\ (eqList tl1 tl2)
-      | _, _ => False
-    end.
-
-  Lemma eqListRefl : forall l, eqList l l.
-  Proof.
-    intro l; induction l; simpl.
-
-      trivial.
-
-      split; try assumption.
-      reflexivity.
-  Qed.
-
-  Lemma eqListSym : forall l l', eqList l l' -> eqList l' l.
-  Proof.
-    intro l; induction l.
-
-      intro l'; induction l'; auto.
-
-      intro l'; induction l'; auto.
-      simpl.
-      intro H.
-      destruct H as [Haa0 Hll'].
-      split; intuition.
-  Qed.
-
-  Lemma eqListTrans : forall l1 l2 l3, eqList l1 l2 -> eqList l2 l3 -> eqList l1 l3.
-  Proof.
-    intro l1; induction l1.
-
-      intro l2; induction l2.
-
-        intro l3; induction l3.
-
-          simpl; trivial.
-
-          simpl; intuition.
-
-        simpl; intuition.
-
-      intro l2; induction l2.
-
-        intro l3; induction l3.
-
-          simpl; trivial.
-
-          simpl; intuition.
-
-        intro l3; induction l3.
-
-          simpl; trivial.
-
-          simpl.
-          intros Hl1l2 Hl2l3.
-          destruct Hl1l2 as [Haa0 Hl1l2].
-          destruct Hl2l3 as [Ha0a1 Hl2l3].
-          split.
-
-            transitivity a0; assumption.
-
-            apply IHl1 with l2; assumption.
-  Qed.
-
-  Definition tST := cartesianPower positive (Datatypes.S (Datatypes.S n)).
-
-  Definition eqST (cp1 cp2 : tST) :=
-    eqList (PosSort.sort (CPToList cp1)) (PosSort.sort (CPToList cp2)).
-
-  Lemma eqListSortOCP : forall (cp : tST), eqList (CPToList (OCP cp)) (PosSort.sort (CPToList cp)).
-  Proof.
-    intro cp.
-    unfold OCP.
-    unfold OCPAux.
-    elim_eq_rect.
-    simpl.
-    rewrite CPLOK.
-    apply eqListRefl.
-  Qed.
-
-  Fixpoint eqbList (l1 l2 : list positive) :=
-    match l1, l2 with
-      | nil         , nil          => true
-      | (hd1 :: tl1), (hd2 :: tl2) => (Pos.eqb hd1 hd2) && (eqbList tl1 tl2)
-      | _           , _            => false
-    end.
-
-  Lemma eqbListEqList : forall l1 l2, eqbList l1 l2 = true <-> eqList l1 l2.
-  Proof.
-    intro l1.
-    induction l1.
-
-      intro l2.
-      induction l2.
-
-        simpl; unfold eqList.
-        intuition.
-
-        simpl; unfold eqList.
-        split; intro; intuition; discriminate.
-
-      intro l2.
-      induction l2.
-
-        simpl; unfold eqList.
-        split; intro; intuition; discriminate.
-
-        split; intro H.
-
-          unfold eqbList in H.
-          apply andb_true_iff in H.
-          destruct H as [Hhd Htl].
-          fold eqbList in Htl.
-          assert (H := IHl1 l2).
-          rewrite H in Htl.
-          unfold eqList.
-          split; try assumption.
-          rewrite PositiveSet.E.eqb_eq in Hhd.
-          subst; reflexivity.
-
-          apply andb_true_iff.
-          rewrite PositiveSet.E.eqb_eq; fold eqbList.
-          unfold eqList in H.
-          destruct H as [Hhd Htl].
-          fold eqList in Htl.
-          assert (H := IHl1 l2).
-          rewrite <- H in Htl.
-          split; assumption.
-  Qed.
-
-  Definition eqbST (cp1 cp2 : tST) :=
-    eqbList (PosSort.sort (CPToList cp1)) (PosSort.sort (CPToList cp2)).
-
-  Lemma eqbST_eqST : forall cp1 cp2, eqbST cp1 cp2 = true <-> eqST cp1 cp2.
-  Proof. intros; unfold eqbST, eqST; apply eqbListEqList. Qed.
-
-  Fixpoint ltList (l1 l2 : list positive) :=
-    match l1, l2 with
-      | nil, nil => False
-      | (hd1 :: tl1), (hd2 :: tl2) => if (Pos.ltb hd1 hd2) then True
-                                      else if (Pos.ltb hd2 hd1) then False
-                                           else (ltList tl1 tl2)
-      | nil, _ => True
-      | _, nil => False
-    end.
-
-  Lemma lengthOne : forall (l : list positive),
-    length l = 1 -> exists a, l = a :: nil.
-  Proof.
-    intros l Hl.
-    induction l.
-
-      simpl in Hl; discriminate.
-
-      induction l.
-
-        exists a; reflexivity.
-
-      simpl in Hl; discriminate.
-  Qed.
-
-  Lemma lengthAtLeastOne : forall (l : list positive) n,
-    length l = (Datatypes.S n) -> exists a0 l0, l = a0 :: l0.
-  Proof.
-    intros l n Hl.
-    induction l.
-
-      simpl in Hl; discriminate.
-
-      exists a; exists l; reflexivity.
-  Qed.
-
-  Lemma ltListTrans : forall m x y z,
-    length x = (Datatypes.S m) ->
-    length y = (Datatypes.S m) ->
-    length z = (Datatypes.S m) ->
-    ltList x y -> ltList y z -> ltList x z.
-  Proof.
-    intro m; induction m; intros x y z lx ly lz Hxy Hyz.
-
-      assert (Hx := lengthOne x lx); destruct Hx as [hdx Hx].
-      assert (Hy := lengthOne y ly); destruct Hy as [hdy Hy].
-      assert (Hz := lengthOne z lz); destruct Hz as [hdz Hz].
-      subst; simpl in *.
-      assert (H : Pos.ltb hdx hdz = true).
-
-        rewrite Pos.ltb_lt.
-        transitivity hdy.
-
-          rewrite <- Pos.ltb_lt.
-          induction (Pos.ltb hdx hdy); intuition.
-          induction (Pos.ltb hdy hdx); intuition.
-
-          rewrite <- Pos.ltb_lt.
-          induction (Pos.ltb hdy hdz); intuition.
-          induction (Pos.ltb hdz hdy); intuition.
-
-        rewrite H; trivial.
-
-      assert (Hx := lengthAtLeastOne x (Datatypes.S m) lx); destruct Hx as [hdx [tlx Hx]].
-      assert (Hy := lengthAtLeastOne y (Datatypes.S m) ly); destruct Hy as [hdy [tly Hy]].
-      assert (Hz := lengthAtLeastOne z (Datatypes.S m) lz); destruct Hz as [hdz [tlz Hz]].
-      subst; simpl in *.
-      assert (HEqxy := Pos.compare_eq hdx hdy).
-      assert (HEqyz := Pos.compare_eq hdy hdz).
-      assert (HLtxy := Pos.compare_nge_iff hdx hdy).
-      assert (HLtyz := Pos.compare_nge_iff hdy hdz).
-      assert (HGtxy := Pos.compare_gt_iff hdx hdy).
-      assert (HGtyz := Pos.compare_gt_iff hdy hdz).
-      induction (Pos.compare hdx hdy); induction (Pos.compare hdy hdz).
-
-        assert (H : Eq = Eq) by reflexivity.
-        apply HEqxy in H; clear HEqxy; clear HLtxy; clear HGtxy.
-        assert (H' : Eq = Eq) by reflexivity.
-        apply HEqyz in H'; clear HEqyz; clear HLtyz; clear HGtyz.
-        subst.
-        assert (H := Pos.ltb_irrefl hdz).
-        rewrite H in *; clear H.
-        apply eq_add_S in lx.
-        apply eq_add_S in ly.
-        apply eq_add_S in lz.
-        apply IHm with tly; assumption.
-
-        assert (H : Eq = Eq) by reflexivity.
-        apply HEqxy in H; clear HEqxy; clear HLtxy; clear HGtxy.
-        assert (H' : Lt = Lt) by reflexivity.
-        apply HLtyz in H'; clear HEqyz; clear HLtyz; clear HGtyz.
-        subst.
-        rewrite <- Pos.lt_nle in H'.
-        rewrite <- Pos.ltb_lt in H'.
-        rewrite H' in *.
-        trivial.
-
-        assert (H : Eq = Eq) by reflexivity.
-        apply HEqxy in H; clear HEqxy; clear HLtxy; clear HGtxy.
-        assert (H' : Gt = Gt) by reflexivity.
-        apply HGtyz in H'; clear HEqyz; clear HLtyz; clear HGtyz.
-        subst.
-        rewrite <- Pos.ltb_lt in H'.
-        rewrite H' in *.
-        trivial.
-
-        assert (H : Lt = Lt) by reflexivity.
-        apply HLtxy in H; clear HEqxy; clear HLtxy; clear HGtxy.
-        assert (H' : Eq = Eq) by reflexivity.
-        apply HEqyz in H'; clear HEqyz; clear HLtyz; clear HGtyz.
-        subst.
-        rewrite <- Pos.lt_nle in H.
-        rewrite <- Pos.ltb_lt in H.
-        rewrite H in *.
-        trivial.
-
-        assert (H : Lt = Lt) by reflexivity.
-        apply HLtxy in H; clear HEqxy; clear HLtxy; clear HGtxy.
-        assert (H' : Lt = Lt) by reflexivity.
-        apply HLtyz in H'; clear HEqyz; clear HLtyz; clear HGtyz.
-        rewrite <- Pos.lt_nle in H.
-        rewrite <- Pos.lt_nle in H'.
-        assert (H'' : Pos.lt hdx hdz) by (transitivity hdy; assumption).
-        rewrite <- Pos.ltb_lt in H''.
-        rewrite H''.
-        trivial.
-
-        clear HEqxy; clear HLtxy; clear HGtxy.
-        assert (H : Gt = Gt) by reflexivity.
-        apply HGtyz in H; clear HEqyz; clear HLtyz; clear HGtyz.
-        rewrite <- Pos.ltb_lt in H.
-        rewrite H in *.
-        rewrite Pos.ltb_lt in H.
-        rewrite Pos.lt_nle in H.
-        assert (H' : Pos.ltb hdy hdz = false).
-
-          rewrite Pos.ltb_nlt.
-          intro H'.
-          apply H.
-          apply Pos.lt_eq_cases.
-          left; assumption.
-
-        rewrite H' in *.
-        intuition.
-
-        clear HEqyz; clear HLtyz; clear HGtyz.
-        assert (H : Gt = Gt) by reflexivity.
-        apply HGtxy in H; clear HEqxy; clear HLtxy; clear HGtxy.
-        rewrite <- Pos.ltb_lt in H.
-        rewrite H in *.
-        rewrite Pos.ltb_lt in H.
-        rewrite Pos.lt_nle in H.
-        assert (H' : Pos.ltb hdx hdy = false).
-
-          rewrite Pos.ltb_nlt.
-          intro H'.
-          apply H.
-          apply Pos.lt_eq_cases.
-          left; assumption.
-
-        rewrite H' in *.
-        intuition.
-
-        clear HEqyz; clear HLtyz; clear HGtyz.
-        assert (H : Gt = Gt) by reflexivity.
-        apply HGtxy in H; clear HEqxy; clear HLtxy; clear HGtxy.
-        rewrite <- Pos.ltb_lt in H.
-        rewrite H in *.
-        rewrite Pos.ltb_lt in H.
-        rewrite Pos.lt_nle in H.
-        assert (H' : Pos.ltb hdx hdy = false).
-
-          rewrite Pos.ltb_nlt.
-          intro H'.
-          apply H.
-          apply Pos.lt_eq_cases.
-          left; assumption.
-
-        rewrite H' in *.
-        intuition.
-
-        clear HEqyz; clear HLtyz; clear HGtyz.
-        assert (H : Gt = Gt) by reflexivity.
-        apply HGtxy in H; clear HEqxy; clear HLtxy; clear HGtxy.
-        rewrite <- Pos.ltb_lt in H.
-        rewrite H in *.
-        rewrite Pos.ltb_lt in H.
-        rewrite Pos.lt_nle in H.
-        assert (H' : Pos.ltb hdx hdy = false).
-
-          rewrite Pos.ltb_nlt.
-          intro H'.
-          apply H.
-          apply Pos.lt_eq_cases.
-          left; assumption.
-
-        rewrite H' in *.
-        intuition.
-  Qed.
-
-  Lemma sortOK : forall m l, length l = m -> length (sort l) = m.
-  Proof.
-    intros m l Hl.
-    assert (H := Permuted_iter_merge l nil).
-    apply Permutation.Permutation_length in H.
-    unfold flatten_stack in H.
-    simpl in H.
-    rewrite <- Hl.
-    rewrite H.
-    unfold sort.
-    reflexivity.
-  Qed.
-
-  Definition ltST (cp1 cp2 : tST) :=
-    ltList (PosSort.sort (CPToList cp1)) (PosSort.sort (CPToList cp2)).
-
-  Lemma ltTrans : Transitive ltST.
-  Proof.
-    unfold lt.
-    intros x y z Hxy Hyz.
-
-    assert (lx : (Datatypes.S (Datatypes.S n)) = (Datatypes.S (Datatypes.S n))) by reflexivity.
-    assert (lx' := lengthOfCPToList x).
-    assert (lx'' := sortOK (Datatypes.S (Datatypes.S n)) (CPToList x)).
-    rewrite <- lx' in lx''; clear lx'.
-    apply lx'' in lx; clear lx''.
-
-    assert (ly : (Datatypes.S (Datatypes.S n)) = (Datatypes.S (Datatypes.S n))) by reflexivity.
-    assert (ly' := lengthOfCPToList y).
-    assert (ly'' := sortOK (Datatypes.S (Datatypes.S n)) (CPToList y)).
-    rewrite <- ly' in ly''; clear ly'.
-    apply ly'' in ly; clear ly''.
-
-    assert (lz : (Datatypes.S (Datatypes.S n)) = (Datatypes.S (Datatypes.S n))) by reflexivity.
-    assert (lz' := lengthOfCPToList z).
-    assert (lz'' := sortOK (Datatypes.S (Datatypes.S n)) (CPToList z)).
-    rewrite <- lz' in lz''; clear lz'.
-    apply lz'' in lz; clear lz''.
-
-    assert (H := ltListTrans (Datatypes.S n) (sort (CPToList x)) (sort (CPToList y)) (sort (CPToList z))).
-    apply H; assumption.
-  Qed.
-
-  Lemma ltListIrrefl : forall l, ltList l l -> False.
-  Proof.
-    intro l.
-    induction l.
-
-      simpl; intuition.
-
-      assert (H := Pos.lt_irrefl a).
-      rewrite <- Pos.ltb_nlt in H.
-      simpl.
-      rewrite H.
-      apply IHl.
-  Qed.
-
-  Lemma eqListOK : forall l1 l2, eqList l1 l2 -> l1 = l2.
-  Proof.
-    intro l1.
-    induction l1.
-
-      intro l2.
-      induction l2.
-
-        trivial.
-
-        simpl; intuition.
-
-      intro l2.
-      induction l2.
-
-        simpl; intuition.
-
-        simpl.
-        intro HEq.
-        destruct HEq as [Hhd Htl].
-        unfold Pos.eq in Hhd.
-        apply IHl1 in Htl.
-        subst.
-        reflexivity.
-  Qed.
-
-  Fixpoint compareList (l1 l2 : list positive) :=
-    match l1, l2 with
-    | nil, nil => Eq
+Context {Ar : Arity}.
+
+Fixpoint eqList (l1 l2 : list positive) :=
+  match l1, l2 with
+    | nil         , nil          => True
+    | (hd1 :: tl1), (hd2 :: tl2) => (Pos.eq hd1 hd2) /\ (eqList tl1 tl2)
+    | _           , _            => False
+  end.
+
+Fixpoint eqbList (l1 l2 : list positive) :=
+  match l1, l2 with
+    | nil         , nil          => true
+    | (hd1 :: tl1), (hd2 :: tl2) => (Pos.eqb hd1 hd2) && (eqbList tl1 tl2)
+    | _           , _            => false
+  end.
+
+Fixpoint ltList (l1 l2 : list positive) :=
+  match l1, l2 with
+    | nil         , nil          => False
+    | nil         , _            => True
+    | _           , nil          => False
     | (hd1 :: tl1), (hd2 :: tl2) => match Pos.compare hd1 hd2 with
-                                    | Lt => Lt
-                                    | Eq => compareList tl1 tl2
-                                    | Gt => Gt
+                                      | Lt => True
+                                      | Gt => False
+                                      | _  => ltList tl1 tl2
                                     end
-    | nil, _ => Lt
-    | _, nil => Gt
+  end.
+
+Fixpoint compareList (l1 l2 : list positive) :=
+  match l1, l2 with
+    | nil         , nil          => Eq
+    | nil         , _            => Lt
+    | _           , nil          => Gt
+    | (hd1 :: tl1), (hd2 :: tl2) => match Pos.compare hd1 hd2 with
+                                      | Lt => Lt
+                                      | Eq => compareList tl1 tl2
+                                      | Gt => Gt
+                                    end
     end.
 
-  Lemma compareListSpec : forall l1 l2,
-    CompSpec eqList ltList l1 l2 (compareList l1 l2).
-  Proof.
-    intro l1.
-    unfold eqST; unfold lt.
-    induction l1.
+Lemma eqbListEqList : forall l1 l2, eqbList l1 l2 = true <-> eqList l1 l2.
+Proof.
+intro l1; induction l1; intro l2; induction l2; simpl; try solve [intuition].
+split; intro H; [apply andb_true_iff in H|apply andb_true_iff];
+destruct H as [Hhd Htl]; [rewrite (IHl1 l2) in Htl|rewrite <- (IHl1 l2) in Htl];
+split; try assumption; apply Pos.eqb_eq; assumption.
+Qed.
 
-      intro l2.
-      induction l2.
+Lemma eqListRefl : forall l, eqList l l.
+Proof.
+intro l; induction l; simpl; [trivial|].
+split; [reflexivity|assumption].
+Qed.
 
-        simpl.
-        apply CompEq.
-        simpl; trivial.
+Lemma eqListSym : forall l l', eqList l l' -> eqList l' l.
+Proof.
+intro l; induction l; [intro l'; induction l'; auto|].
+intro l'; induction l'; auto; simpl; intros [Haa0 Hll']; split; intuition.
+Qed.
 
-        simpl.
-        apply CompLt.
-        simpl; trivial.
+Lemma eqListTrans : forall l1 l2 l3,
+  eqList l1 l2 -> eqList l2 l3 -> eqList l1 l3.
+Proof.
+intro l1; induction l1; intro l2; induction l2; intro l3; induction l3; simpl;
+trivial; [intuition|intros [Haa0 Hl1l2] [Ha0a1 Hl2l3]].
+split; [transitivity a0; assumption|apply IHl1 with l2; assumption].
+Qed.
 
-      intro l2.
-      induction l2.
+Lemma lengthOne : forall (l : list positive),
+  length l = 1 -> exists a, l = a :: nil.
+Proof.
+intros l Hl; induction l; [discriminate|].
+induction l; [exists a; reflexivity|discriminate].
+Qed.
 
-        simpl.
-        apply CompGt.
-        simpl; trivial.
+Lemma lengthAtLeastOne : forall (l : list positive) n,
+  length l = (Datatypes.S n) -> exists a0 l0, l = a0 :: l0.
+Proof.
+intros l n Hl; induction l; [discriminate|exists a, l; reflexivity].
+Qed.
 
-        clear IHl2.
-        assert (HEq := Pos.compare_eq a a0).
-        assert (HLt := Pos.compare_nge_iff a a0).
-        assert (HGt := Pos.compare_gt_iff a a0).
-        induction (Pos.compare a a0).
+Lemma ltListTrans : forall m x y z,
+  length x = (Datatypes.S m) ->
+  length y = (Datatypes.S m) ->
+  length z = (Datatypes.S m) ->
+  ltList x y -> ltList y z -> ltList x z.
+Proof.
+intro m; induction m; intros x y z lx ly lz Hxy Hyz.
 
-          assert (H : Eq = Eq) by reflexivity.
-          apply HEq in H; clear HEq; clear HLt; clear HGt.
-          subst.
-          simpl.
-          rewrite POrderedType.Positive_as_OT.compare_refl.
-          assert (H := IHl1 l2); clear IHl1.
-          induction H.
+  {
+  destruct (lengthOne x lx) as [hdx Hx].
+  destruct (lengthOne y ly) as [hdy Hy].
+  destruct (lengthOne z lz) as [hdz Hz].
+  subst; simpl in *; revert Hxy Hyz.
+  generalize (Pos.compare_lt_iff hdx hdy).
+  elim (Pos.compare hdx hdy); [intuition| |intuition].
+  intros H _; assert (Hxy : Pos.lt hdx hdy) by (intuition); clear H.
+  generalize (Pos.compare_lt_iff hdy hdz).
+  elim (Pos.compare hdy hdz); [intuition| |intuition].
+  intros H _; assert (Hyz : Pos.lt hdy hdz) by (intuition); clear H.
+  assert (Hxz : Pos.lt hdx hdz) by (transitivity hdy; auto).
+  rewrite <- Pos.compare_lt_iff in Hxz; rewrite Hxz; auto.
+  }
 
-            apply CompEq.
-            simpl; split; auto; apply Pos.eq_refl.
+  {
+  destruct (lengthAtLeastOne x (Datatypes.S m) lx) as [hdx [tlx Hx]].
+  destruct (lengthAtLeastOne y (Datatypes.S m) ly) as [hdy [tly Hy]].
+  destruct (lengthAtLeastOne z (Datatypes.S m) lz) as [hdz [tlz Hz]].
+  subst; simpl in *; revert Hxy Hyz.
+  generalize (Pos.compare_lt_iff hdx hdy) (Pos.compare_eq hdx hdy).
+  elim (Pos.compare hdx hdy); [intros _ H HLxy|intros H _ _|intuition].
 
-            apply CompLt.
-            simpl; rewrite Pos.ltb_irrefl; auto.
+    {
+    assert (Hxy : hdx = hdy) by intuition; clear H.
+    generalize (Pos.compare_lt_iff hdy hdz) (Pos.compare_eq hdy hdz).
+    elim (Pos.compare hdy hdz); [intros _ H HLyz|intros H _ _|intuition].
 
-            apply CompGt.
-            simpl; rewrite Pos.ltb_irrefl; auto.
+      {
+      assert (hdx = hdz); [transitivity hdy; intuition|subst].
+      rewrite Pos.compare_refl; apply IHm with tly; auto.
+      }
 
-          assert (H : Lt = Lt) by reflexivity.
-          apply HLt in H; clear HEq; clear HLt; clear HGt.
-          rewrite <- Pos.lt_nle in H.
-          apply Pos.compare_lt_iff in H.
-          simpl.
-          rewrite H.
-          apply CompLt.
-          rewrite Pos.compare_lt_iff in H.
-          rewrite <- Pos.ltb_lt in H.
-          simpl.
-          rewrite H.
-          trivial.
+      {
+      assert (Hxz : Pos.lt hdx hdz) by (subst; intuition).
+      rewrite <- Pos.compare_lt_iff in Hxz; rewrite Hxz; auto.
+      }
+    }
 
-          assert (H : Gt = Gt) by reflexivity.
-          apply HGt in H; clear HEq; clear HLt; clear HGt.
-          apply Pos.compare_gt_iff in H.
-          simpl.
-          rewrite H.
-          apply CompGt.
-          rewrite Pos.compare_gt_iff in H.
-          rewrite <- Pos.ltb_lt in H.
-          simpl.
-          rewrite H.
-          trivial.
-  Qed.
+    {
+    assert (Hxy : Pos.lt hdx hdy) by intuition; clear H.
+    generalize (Pos.compare_lt_iff hdy hdz) (Pos.compare_eq hdy hdz).
+    elim (Pos.compare hdy hdz); [intros _ H HLyz|intros H _ _|intuition].
 
-  Definition compareST (cp1 cp2 : tST) :=
-    compareList (PosSort.sort (CPToList cp1)) (PosSort.sort (CPToList cp2)).
+      {
+      assert (Hyz : hdy = hdz) by intuition.
+      assert (Hxz : Pos.lt hdx hdz) by (subst; auto).
+      rewrite <- Pos.compare_lt_iff in Hxz; rewrite Hxz; auto.
+      }
 
-  Lemma compare_spec : forall cp1 cp2,
-    CompSpec eqST ltST cp1 cp2 (compareST cp1 cp2).
-  Proof.
-    intros cp1 cp2.
-    unfold eqST, ltST, compareST.
-    apply compareListSpec.
-  Qed.
+      {
+      assert (Hyz : Pos.lt hdy hdz) by intuition; clear H.
+      assert (Hxz : Pos.lt hdx hdz) by (transitivity hdy; auto).
+      rewrite <- Pos.compare_lt_iff in Hxz; rewrite Hxz; auto.
+      }
+    }
+  }
+Qed.
+
+Lemma ltListNotEqList : forall m x y,
+  length x = (Datatypes.S m) ->
+  length y = (Datatypes.S m) ->
+  ltList x y -> ~ eqList x y.
+Proof.
+intro m; induction m; intros x y lx ly Hxy.
+
+  {
+  destruct (lengthOne x lx) as [hdx Hx].
+  destruct (lengthOne y ly) as [hdy Hy].
+  subst; simpl in *; revert Hxy; rewrite <- Pos.compare_eq_iff.
+  elim (Pos.compare hdx hdy); intuition discriminate.
+  }
+
+  {
+  destruct (lengthAtLeastOne x (Datatypes.S m) lx) as [hdx [tlx Hx]].
+  destruct (lengthAtLeastOne y (Datatypes.S m) ly) as [hdy [tly Hy]].
+  subst; simpl in *; revert Hxy; rewrite <- Pos.compare_eq_iff.
+  elim (Pos.compare hdx hdy); try intuition discriminate.
+  intros HLt [_ HEq]; apply (IHm tlx tly); auto.
+  }
+Qed.
+
+Lemma compareListSpec : forall l1 l2,
+  CompareSpec (eqList l1 l2) (ltList l1 l2) (ltList l2 l1) (compareList l1 l2).
+Proof.
+intro l1; induction l1; intro l2; induction l2; simpl;
+[apply CompEq|apply CompLt|apply CompGt|clear IHl2]; auto.
+generalize (Pos.compare_eq a a0); rewrite (Pos.compare_antisym a a0).
+elim (Pos.compare a a0); simpl; intro H; [|apply CompLt|apply CompGt]; auto.
+rewrite H; auto; clear H; elim (IHl1 l2); intro H;
+[apply CompEq; split|apply CompLt|apply CompGt]; auto; apply Pos.eq_refl.
+Qed.
+
+Definition tST := cartesianPower positive (Datatypes.S (Datatypes.S n)).
+
+Definition eqST (cp1 cp2 : tST) :=
+  eqList (sort (CPToList cp1)) (sort (CPToList cp2)).
+
+Definition eqbST (cp1 cp2 : tST) :=
+  eqbList (sort (CPToList cp1)) (sort (CPToList cp2)).
+
+Definition ltST (cp1 cp2 : tST) :=
+  ltList (sort (CPToList cp1)) (sort (CPToList cp2)).
+
+Definition compareST (cp1 cp2 : tST) :=
+  compareList (sort (CPToList cp1)) (sort (CPToList cp2)).
+
+Lemma eqbST_eqST : forall cp1 cp2, eqbST cp1 cp2 = true <-> eqST cp1 cp2.
+Proof. intros; apply eqbListEqList. Qed.
+
+Lemma eqST_refl : forall cp, eqST cp cp.
+Proof. intros; apply eqListRefl. Qed.
+
+Lemma eqST_sym : forall cp1 cp2, eqST cp1 cp2 -> eqST cp2 cp1.
+Proof. intros cp1 cp2; apply eqListSym. Qed.
+
+Lemma eqST_trans : forall cp1 cp2 cp3,
+  eqST cp1 cp2 -> eqST cp2 cp3 -> eqST cp1 cp3.
+Proof. intros cp1 cp2 cp3; apply eqListTrans. Qed.
+
+Lemma sortOK : forall m l, length l = m -> length (sort l) = m.
+Proof.
+intros m l Hl; rewrite <- Hl; apply Permutation.Permutation_length.
+apply Permutation.Permutation_sym, Permuted_sort.
+Qed.
+
+Lemma ltST_trans : forall cp1 cp2 cp3,
+  ltST cp1 cp2 -> ltST cp2 cp3 -> ltST cp1 cp3.
+Proof.
+unfold ltST; intros cp1 cp2 cp3; apply ltListTrans with (Datatypes.S n);
+apply sortOK; rewrite <- lengthOfCPToList; reflexivity.
+Qed.
+
+Lemma ltST_not_eqST : forall cp1 cp2, ltST cp1 cp2 -> ~ eqST cp1 cp2.
+Proof.
+intros cp1 cp2; apply ltListNotEqList with (Datatypes.S n);
+apply sortOK; rewrite <- lengthOfCPToList; reflexivity.
+Qed.
+
+Lemma CompareST : forall cp1 cp2,
+  CompareSpec (eqST cp1 cp2) (ltST cp1 cp2) (ltST cp2 cp1) (compareST cp1 cp2).
+Proof. intros; apply compareListSpec. Qed.
+
+Global Instance ST : OrderedType.
+Proof.
+exact (Build_OrderedType eqST eqbST ltST compareST
+                         eqbST_eqST
+                         eqST_refl
+                         eqST_sym
+                         eqST_trans
+                         ltST_trans
+                         ltST_not_eqST
+                         CompareST).
+Defined.
+
+(*
+Lemma eqListSortOCP : forall (cp : tST),
+  eqList (CPToList (OCP cp)) (sort (CPToList cp)).
+Proof.
+intro cp; unfold OCP, OCPAux; elim_eq_rect; simpl.
+rewrite CPLOK; apply eqListRefl.
+Qed.
+
+Lemma eqListOK : forall l1 l2, eqList l1 l2 -> l1 = l2.
+Proof.
+intro l1; induction l1; intro l2; induction l2; simpl; try solve [intuition].
+intros [Hhd Htl]; rewrite Hhd, (IHl1 l2); [reflexivity|auto].
+Qed.
+*)
+
 (*
 TODO: try to see if using sorted lists would not make the tactic faster.
 *)
+
+(*
   Definition STelt := tST.
 
   Definition STt := list tST.
@@ -1054,6 +757,6 @@ TODO: try to see if using sorted lists would not make the tactic faster.
   Lemma STadd_iff : forall (s : STt) (x y : STelt),
     STmem y (STadd x s) = true <-> (eqST x y \/ STmem y s = true).
   Proof. intros; simpl; elim (eqST_dec x y);intro;intuition. Qed.
+*)
 
 End Set_of_tuple_of_positive.
-*)
