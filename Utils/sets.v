@@ -874,6 +874,16 @@ rewrite H; auto; clear H; elim (IHl1 l2); intro H;
 [apply CompEq; split|apply CompLt|apply CompGt]; auto; apply Pos.eq_refl.
 Qed.
 
+Lemma eqListOK : forall l1 l2, eqList l1 l2 -> l1 = l2.
+Proof.
+intro l1; induction l1; intro l2; induction l2; simpl; try solve [intuition].
+intros [Hhd Htl]; rewrite Hhd, (IHl1 l2); [reflexivity|auto].
+Qed.
+
+Section Set_of_tuple_of_positive.
+
+Context {Ar : Arity}.
+
 Definition tST := cartesianPower positive (Datatypes.S (Datatypes.S n)).
 
 Definition eqST (cp1 cp2 : tST) :=
@@ -936,7 +946,6 @@ exact (Build_OrderedType eqST eqbST ltST compareST
                          CompareST).
 Defined.
 
-(*
 Lemma eqListSortOCP : forall (cp : tST),
   eqList (CPToList (OCP cp)) (sort (CPToList cp)).
 Proof.
@@ -950,7 +959,6 @@ intro l1; induction l1; intro l2; induction l2; simpl; try solve [intuition].
 intros [Hhd Htl]; rewrite Hhd, (IHl1 l2); [reflexivity|auto].
 Qed.
 *)
->>>>>>> some progress
 
 (*
 TODO: try to see if using sorted lists would not make the tactic faster.

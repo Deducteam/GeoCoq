@@ -1,4 +1,3 @@
-(*
 Require Import NArith.
 Require Import GeoCoq.Utils.sets.
 Require Import GeoCoq.Meta_theory.Models.tarski_to_coinc_theory_for_col.
@@ -149,5 +148,4 @@ Time Col_refl Tpoint Col.
 Qed.
 
 End Test.
-*)
 *)

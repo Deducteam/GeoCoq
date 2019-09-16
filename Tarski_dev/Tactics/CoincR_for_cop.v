@@ -1,4 +1,3 @@
-(*
 Require Import GeoCoq.Tarski_dev.Ch09_plane.
 Require Import NArith.
 Require Import GeoCoq.Utils.sets.
