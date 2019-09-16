@@ -1,4 +1,3 @@
-(*
 Require Import NArith.
 Require Import GeoCoq.Utils.sets.
 Require Import GeoCoq.Meta_theory.Models.tarski_to_coinc_theory_for_col.
@@ -12,7 +11,7 @@ Definition ss_ok_for_col ss interp :=
   @ss_ok Tarski_is_a_Arity_for_col
          Tarski_is_a_Coinc_predicates_for_col ss interp.
 
-Lemma ss_ok_empty_for_col : forall interp, ss_ok_for_col SS.empty interp.
+Lemma ss_ok_empty_for_col : forall interp, ss_ok_for_col empty interp.
 Proof. exact ss_ok_empty. Qed.
 
 Lemma collect_coincs_for_col : forall A B C pa pb pc ss interp,
@@ -21,7 +20,7 @@ Lemma collect_coincs_for_col : forall A B C pa pb pc ss interp,
   interp pb = B ->
   interp pc = C ->
   ss_ok_for_col ss interp ->
-  ss_ok_for_col (SS.add (@CPToSS 3 (pa, (pb, pc))) ss) interp.
+  ss_ok_for_col (add (@CPToSS 3 (pa, (pb, pc))) ss) interp.
 Proof.
 intros A B C pa pb pc ss interp HCol HA HB HC HSS.
 apply (@collect_coincs Tarski_is_a_Arity_for_col
@@ -34,7 +33,7 @@ Definition st_ok_for_col st interp :=
   @st_ok Tarski_is_a_Arity_for_col
          Tarski_is_a_Coinc_predicates_for_col st interp.
 
-Lemma st_ok_empty_for_col : forall interp, st_ok_for_col STempty interp.
+Lemma st_ok_empty_for_col : forall interp, st_ok_for_col empty interp.
 Proof. exact st_ok_empty. Qed.
 
 Lemma collect_wds_for_col : forall A B pa pb st interp,
@@ -42,7 +41,7 @@ Lemma collect_wds_for_col : forall A B pa pb st interp,
   interp pa = A ->
   interp pb = B ->
   st_ok_for_col st interp ->
-  st_ok_for_col (STadd (pa, pb) st) interp.
+  st_ok_for_col ((@add ST) (pa, pb) st) interp.
 Proof.
 intros A B pa pb st interp HDiff HA HB HST.
 apply (@collect_wds Tarski_is_a_Arity_for_col
@@ -134,5 +133,4 @@ Time Col_refl Tpoint Col.
 Qed.
 
 End Test.
-*)
 *)

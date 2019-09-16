@@ -511,7 +511,52 @@ Proof.
 decide equality.
 Defined.
 
-Definition interp (lvar : list (CONGpoint * positive)) (Default : CONGpoint) : positive -> CONGpoint := 
-  fun p => list_assoc_inv CONGpoint positive positive_dec lvar p Default.
+Definition interp (lvar : list (CONGpoint * positive)) (Default : CONGpoint) :
+  positive -> CONGpoint :=
+    fun p => list_assoc_inv CONGpoint positive positive_dec lvar p Default.
 
 End Cong_refl.
+
+Ltac add_to_distinct_list x xs :=
+  match xs with
+    | nil     => constr:(x::xs)
+    | x::_    => fail 1
+    | ?y::?ys => let zs := add_to_distinct_list x ys in constr:(y::zs)
+  end.
+
+Ltac collect_points_list Tpoint xs :=
+  match goal with
+    | N : Tpoint |- _ => let ys := add_to_distinct_list N xs in
+                           collect_points_list Tpoint ys
+    | _               => xs
+  end.
+
+Ltac collect_points Tpoint := collect_points_list Tpoint (@nil Tpoint).
+
+Ltac number_aux Tpoint lvar cpt :=
+  match constr:(lvar) with
+    | nil          => constr:(@nil (prodT Tpoint positive))
+    | cons ?H ?T => let scpt := eval vm_compute in (Pos.succ cpt) in
+                    let lvar2 := number_aux Tpoint T scpt in
+                      constr:(cons (@pairT  Tpoint positive H cpt) lvar2)
+  end.
+
+Ltac number Tpoint lvar := number_aux Tpoint lvar (1%positive).
+
+Ltac build_numbered_points_list Tpoint :=
+  let lvar := collect_points Tpoint in number Tpoint lvar.
+
+Ltac List_assoc Tpoint elt lst :=
+  match constr:(lst) with
+    | nil => fail
+    | (cons (@pairT Tpoint positive ?X1 ?X2) ?X3) =>
+      match constr:(elt = X1) with
+        | (?X1 = ?X1) => constr:(X2)
+        | _ => List_assoc Tpoint elt X3
+      end
+  end.
+
+Definition Tagged P : Prop := P.
+
+Lemma PropToTagged : forall P : Prop, P -> Tagged P.
+Proof. trivial. Qed.

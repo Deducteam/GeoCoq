@@ -676,7 +676,7 @@ Lemma singleton_spec : forall (x y : elt),
   In_list y (singleton_aux x) <-> eq x y.
 Proof. unfold singleton_aux; simpl; split; intros; inv; auto. Qed.
 
-Lemma union_spec : forall (l l' : t_aux) (x : elt) (Hl : Ok l) (Hl' : Ok l'),
+Lemma union_spec_aux : forall l l' (x : elt) (Hl : Ok l) (Hl' : Ok l'),
   In_list x (union_aux l l') <-> In_list x l \/ In_list x l'.
 Proof.
 intro l; elim l; clear l; simpl; [intuition; inv|].
@@ -686,6 +686,10 @@ rewrite !In_cons, ?IHl, ?IHl'; intuition;
 try solve [eapply Ok_inv; eauto]; inv; auto.
 left; apply eq_trans with a'; auto.
 Qed.
+
+Lemma union_spec : forall s s' x,
+  In x (union s s') <-> In x s \/ In x s'.
+Proof. unfold In; intros [s Hs] [s' Hs'] x; apply union_spec_aux; auto. Qed.
 
 Lemma inter_spec_aux : forall l l' (x : elt) (Hl : Ok l) (Hl' : Ok l'),
   In_list x (inter_aux l l') <-> In_list x l /\ In_list x l'.
@@ -1072,6 +1076,13 @@ intro y; generalize (empty_iff y) (mem_iff empty y).
 destruct (mem y empty); intuition.
 Qed.
 
+Lemma add_b : forall (s : t) (x y : elt), mem y (add x s) = eqb x y || mem y s.
+Proof.
+intros; generalize (mem_iff (add x s) y) (mem_iff s y) (add_iff s x y).
+generalize (eqb_eq x y); destruct (eqb x y); destruct (mem y s);
+destruct (mem y (add x s)); intuition.
+Qed.
+
 Lemma add_neq_b : forall (s : t) (x y : elt),
   ~ eq x y -> mem y (add x s) = mem y s.
 Proof.
@@ -1086,6 +1097,22 @@ Proof.
 intros s x y E.
 generalize (mem_iff (remove x s) y) (mem_iff s y) (remove_neq_iff s x y E).
 destruct (mem y s); destruct (mem y (remove x s)); intuition.
+Qed.
+
+Lemma union_b : forall (s s' : t) (x : elt),
+  mem x (union s s') = mem x s || mem x s'.
+Proof.
+intros; generalize (mem_iff (union s s') x) (union_spec s s' x).
+generalize (mem_iff s x) (mem_iff s' x).
+destruct (mem x s); destruct (mem x s'); destruct (mem x (union s s')); intuition.
+Qed.
+
+Lemma inter_b : forall (s s' : t) (x : elt),
+  mem x (inter s s') = mem x s && mem x s'.
+Proof.
+intros; generalize (mem_iff (inter s s') x) (inter_spec s s' x).
+generalize (mem_iff s x) (mem_iff s' x).
+destruct (mem x s); destruct (mem x s'); destruct (mem x (inter s s')); intuition.
 Qed.
 
 Lemma filter_b : forall (s : t) (x : elt) (f : elt -> bool),

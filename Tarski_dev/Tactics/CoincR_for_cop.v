@@ -1,4 +1,3 @@
-(*
 Require Import GeoCoq.Tarski_dev.Ch09_plane.
 Require Import NArith.
 Require Import GeoCoq.Utils.sets.
@@ -13,7 +12,7 @@ Definition ss_ok_for_cop ss interp :=
   @ss_ok Tarski_is_a_Arity_for_cop
          Tarski_is_a_Coinc_predicates_for_cop ss interp.
 
-Lemma ss_ok_empty_for_cop : forall interp, ss_ok_for_cop SS.empty interp.
+Lemma ss_ok_empty_for_cop : forall interp, ss_ok_for_cop empty interp.
 Proof. exact ss_ok_empty. Qed.
 
 Lemma collect_coincs_for_cop : forall A B C D pa pb pc pd ss interp,
@@ -23,7 +22,7 @@ Lemma collect_coincs_for_cop : forall A B C D pa pb pc pd ss interp,
   interp pc = C ->
   interp pd = D ->
   ss_ok_for_cop ss interp ->
-  ss_ok_for_cop (SS.add (@CPToSS 4 (pa, (pb, (pc, pd)))) ss) interp.
+  ss_ok_for_cop (add (@CPToSS 4 (pa, (pb, (pc, pd)))) ss) interp.
 Proof.
 intros A B C D pa pb pc pd ss interp HCop HA HB HC HD HSS.
 apply (@collect_coincs Tarski_is_a_Arity_for_cop
@@ -36,7 +35,7 @@ Definition st_ok_for_cop st interp :=
   @st_ok Tarski_is_a_Arity_for_cop
          Tarski_is_a_Coinc_predicates_for_cop st interp.
 
-Lemma st_ok_empty_for_cop : forall interp, st_ok_for_cop STempty interp.
+Lemma st_ok_empty_for_cop : forall interp, st_ok_for_cop empty interp.
 Proof. exact st_ok_empty. Qed.
 
 Lemma collect_wds_for_cop : forall A B C pa pb pc st interp,
@@ -45,7 +44,7 @@ Lemma collect_wds_for_cop : forall A B C pa pb pc st interp,
   interp pb = B ->
   interp pc = C ->
   st_ok_for_cop st interp ->
-  st_ok_for_cop (STadd (pa, (pb, pc)) st) interp.
+  st_ok_for_cop ((@add ST) (pa, (pb, pc)) st) interp.
 Proof.
 intros A B C pa pb pc st interp HDiff HA HB HC HST.
 apply (@collect_wds Tarski_is_a_Arity_for_cop
@@ -145,5 +144,4 @@ Time Cop_refl Tpoint Col Coplanar.
 Qed.
 
 End Test.
-*)
 *)

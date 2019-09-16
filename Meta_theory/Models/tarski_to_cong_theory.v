@@ -1,4 +1,4 @@
-(*Require Export GeoCoq.Tarski_dev.Ch02_cong.
+Require Export GeoCoq.Tarski_dev.Ch02_cong.
 Require Import GeoCoq.Tactics.Coinc.tactics_axioms.
 
 (** In this file we prove that Tarski neutral dimensionless is a Cong_theory. *)
@@ -13,4 +13,3 @@ exact (Build_Cong_theory Tpoint Cong cong_reflexivity cong_left_commutativity co
 Defined.
 
 End Tarski_is_a_Cong_theory.
-*)
