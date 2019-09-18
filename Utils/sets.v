@@ -366,7 +366,7 @@ apply PermSorted.
 
   apply OCPSortedAux.
 
-  rewrite <- CPToListTl2.
+  rewrite <- CPToListTl.
   apply OCPSortedTl.
   apply OCPSortedAux.
 Qed.
