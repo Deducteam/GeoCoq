@@ -1,12 +1,10 @@
 Require Export GeoCoq.Tarski_dev.Ch03_bet.
 Require Export GeoCoq.Tarski_dev.Tactics.CongR.
 
-Ltac CongR := eCong.
-(*
+Ltac CongR :=
  let tpoint := constr:(Tpoint) in
  let cong := constr:(Cong) in
    treat_equalities; unfold Midpoint in *; spliter; Cong; Cong_refl tpoint cong.
-*)
 
 Section T3.
 
