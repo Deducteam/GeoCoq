@@ -57,15 +57,12 @@ repeat
        decompose [and] T;clear T;clean_reap_hyps
  end.
 
+Ltac ColR := elim my_false.
 (*
-Ltac ColR :=
  let tpoint := constr:(Tpoint) in
  let col := constr:(Col) in
    treat_equalities; assert_cols; Col; assert_diffs; Col_refl tpoint col.
- *)
-Axiom my_false : False.
-
-Ltac ColR := elim my_false.
+*)
 
 Section T7_1.
 

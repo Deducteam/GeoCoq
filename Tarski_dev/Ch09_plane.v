@@ -139,10 +139,12 @@ repeat
        decompose [and] T;clear T;clean_reap_hyps
  end.
 
-Ltac ColR :=
+Ltac ColR := elim my_false.
+(*
  let tpoint := constr:(Tpoint) in
  let col := constr:(Col) in
    treat_equalities; assert_cols; Col; assert_diffs; Col_refl tpoint col.
+*)
 
 Ltac clean_trivial_hyps :=
   repeat

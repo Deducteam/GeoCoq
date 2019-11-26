@@ -57,7 +57,8 @@ Ltac copr_aux :=
           |exist_hyp_perm_col X1 X3 X4; assert (Coplanar X1 X3 X4 X2) by (apply col__coplanar; Col)]
  end.
 
-Ltac CopR :=
+Ltac CopR := elim my_false.
+(*
  let tpoint := constr:(Tpoint) in
  let col := constr:(Col) in
  let cop := constr:(Coplanar) in
@@ -65,6 +66,7 @@ Ltac CopR :=
    solve[apply col__coplanar; Col|apply coplanar_perm_1, col__coplanar; Col
         |apply coplanar_perm_4, col__coplanar; Col|apply coplanar_perm_18, col__coplanar; Col
         |copr_aux; Cop_refl tpoint col cop] || fail "Can not be deduced".
+*)
 
 Section T10.
 
