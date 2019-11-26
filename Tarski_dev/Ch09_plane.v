@@ -139,10 +139,12 @@ repeat
        decompose [and] T;clear T;clean_reap_hyps
  end.
 
-Ltac ColR :=
+Ltac ColR := elim my_false.
+(*
  let tpoint := constr:(Tpoint) in
  let col := constr:(Col) in
    treat_equalities; assert_cols; Col; assert_diffs; Col_refl tpoint col.
+*)
 
 Ltac clean_trivial_hyps :=
   repeat
@@ -3198,7 +3200,7 @@ try (intros HCol1 HCol2); try (intro H; destruct H as [HCol1 HCol2]).
   elim (eq_dec_points Z I); intro HZI; treat_equalities; Col.
   assert (HCong3 : Cong I A I B) by (apply l4_17 with X Y; unfold Midpoint in *; spliter; Cong).
   assert (H := l7_20 I A B).
-  elim H; try ColR; intro.
+  elim H; [| |ColR..]; intro.
     treat_equalities; exfalso; auto.
   ColR.
   }

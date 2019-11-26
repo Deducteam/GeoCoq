@@ -276,7 +276,8 @@ repeat
      assert (N := par_id X1 X2 X3 (par_comm X2 X1 X3 X1 H))
 end.
 
-Ltac CopR :=
+Ltac CopR := elim my_false.
+(*
  let tpoint := constr:(Tpoint) in
  let col := constr:(Col) in
  let cop := constr:(Coplanar) in
@@ -284,6 +285,7 @@ Ltac CopR :=
    solve[apply col__coplanar; Col|apply coplanar_perm_1, col__coplanar; Col
         |apply coplanar_perm_4, col__coplanar; Col|apply coplanar_perm_18, col__coplanar; Col
         |copr_aux; Cop_refl tpoint col cop] || fail "Can not be deduced".
+*)
 
 Section Quadrilateral_inter_dec_1.
 
@@ -2417,15 +2419,19 @@ repeat
        assert (T:= plgs_diff A B C D H);decompose [and] T;clear T;clean_reap_hyps
  end.
 
-Ltac ColR :=
+Ltac ColR := elim my_false.
+(*
  let tpoint := constr:(Tpoint) in
  let col := constr:(Col) in
    treat_equalities; assert_cols; Col; assert_diffs; Col_refl tpoint col.
+*)
 
-Ltac CongR :=
+Ltac CongR := elim my_false.
+(*
  let tpoint := constr:(Tpoint) in
  let cong := constr:(Cong) in
    treat_equalities; assert_congs_1; Cong; Cong_refl tpoint cong.
+*)
 
 Ltac show_distinct X Y := assert (X<>Y);[intro;treat_equalities|idtac].
 

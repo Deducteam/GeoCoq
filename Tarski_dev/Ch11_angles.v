@@ -9320,7 +9320,7 @@ Proof.
       apply (between_cong C); auto.
     }
     intro HNBet.
-    apply not_bet_out in HNBet; try ColR.
+    apply not_bet_out in HNBet; [|ColR].
     assert_diffs.
     assert(Bet C D A) by (apply (l6_2 B); try (apply l6_6); Between).
     assert(A <> C) by (intro; treat_equalities; auto).
@@ -9743,7 +9743,7 @@ Proof.
     assert (Col T B P) by (apply l10_8, HRefl).
     assert (Col P B A) by ColR.
     assert (Col P B C) by (apply (col_conga_col P B A); assumption).
-    apply not_bet_out; try ColR.
+    apply not_bet_out; [ColR|].
     intro HBet.
     apply (per_not_col P B A); auto.
     apply l11_18_2 with C; assumption.
@@ -9761,7 +9761,7 @@ Proof.
     apply out_col, conga_cop_out_reflectl__out with A P T; assumption.
   destruct (segment_construction A B A B) as [A' [HA'1 HA'2]].
   destruct (segment_construction C B C B) as [C' [HC'1 HC'2]].
-  assert (Out B C' T'); try ColR.
+  assert (Out B C' T'); [|ColR].
   apply conga_distinct in HConga; spliter; assert_diffs.
   apply conga_cop_out_reflectl__out with A' P T; trivial.
   - intro; apply HNOut.
@@ -10554,10 +10554,12 @@ repeat
       assert (h := orth_distincts A B C U V H);decompose [and] h;clear h;clean_reap_hyps
  end.
 
-Ltac ColR :=
+Ltac ColR := elim my_false.
+(*
  let tpoint := constr:(Tpoint) in
  let col := constr:(Col) in
    treat_equalities; assert_cols; Col; assert_diffs; Col_refl tpoint col.
+*)
 
 Hint Resolve conga_refl conga_sym cong3_conga conga_pseudo_refl conga_trivial_1
              conga_right_comm conga_left_comm conga_comm conga_line l11_16 : conga.

@@ -406,10 +406,12 @@ repeat
        decompose [and] T;clear T;clean_reap_hyps
  end.
 
-Ltac ColR :=
+Ltac ColR := elim my_false.
+(*
  let tpoint := constr:(Tpoint) in
  let col := constr:(Col) in
    treat_equalities; assert_cols; Col; assert_diffs; Col_refl tpoint col.
+*)
 
 Ltac assert_ncols :=
 repeat
@@ -437,7 +439,8 @@ repeat
       assert (h := par_strict_not_cols A B C D H);decompose [and] h;clear h;clean_reap_hyps
   end.
 
-Ltac CopR :=
+Ltac CopR := elim my_false.
+(*
  let tpoint := constr:(Tpoint) in
  let col := constr:(Col) in
  let cop := constr:(Coplanar) in
@@ -445,7 +448,7 @@ Ltac CopR :=
    solve[apply col__coplanar; Col|apply coplanar_perm_1, col__coplanar; Col
         |apply coplanar_perm_4, col__coplanar; Col|apply coplanar_perm_18, col__coplanar; Col
         |copr_aux; Cop_refl tpoint col cop] || fail "Can not be deduced".
-
+*)
 
 Hint Resolve
  par_reflexivity par_strict_irreflexivity
