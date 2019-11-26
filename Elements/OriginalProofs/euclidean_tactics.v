@@ -1,17 +1,6 @@
+Require Import Classical.
 Require Export GeoCoq.Elements.OriginalProofs.euclidean_defs.
 Require Export GeoCoq.Elements.OriginalProofs.general_tactics.
-
-Axiom classic : forall P:Prop, P \/ ~ P.
-
-Lemma NNPP : forall p:Prop, ~ ~ p -> p.
-Proof.
-unfold not; intros; elim (classic p); auto.
-intro NP; elim (H NP).
-Qed.
-
-Ltac tauto_classical := apply NNPP; tauto.
-
-Ltac tauto := tauto_classical.
 
 Ltac remove_double_neg :=
 repeat

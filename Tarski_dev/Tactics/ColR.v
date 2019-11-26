@@ -270,6 +270,15 @@ Ltac Col_refl Tpoint Col :=
   assert (CT : Col_theory Tpoint Col) by (typeclasses eauto);
   revert_all Tpoint Col CT; (*Print_Goal;*) Col_refl_aux Tpoint Col CT Pnil (*Inil*) (1%positive).
 
+Ltac Col_refl Tpoint Col :=
+(*
+  let Pnil := constr:(@nil Tpoint) in
+*)
+  let Pnil := constr:(@nil (@prod Tpoint positive)) in
+  let CT := fresh in
+  assert (CT : Col_theory Tpoint Col) by (typeclasses eauto);
+  revert_all Tpoint Col CT;(* Print_Goal;*) Col_refl_aux Tpoint Col CT Pnil (*Inil*) (1%positive).
+
 (*
 Ltac deduce_cols_aux Tpoint Col :=
   match goal with
