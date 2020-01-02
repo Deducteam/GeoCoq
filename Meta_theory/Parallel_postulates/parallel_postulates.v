@@ -50,7 +50,9 @@ Require Export GeoCoq.Tarski_dev.Ch13_1.
 
 Require Import GeoCoq.Utils.all_equiv.
 
+(*
 Require Import Rtauto.
+*)
 
 Section Euclid.
 
@@ -158,12 +160,12 @@ assert (V:=tarski_s_euclid_implies_playfair).
 assert (W:=triangle_circumscription_implies_tarski_s_euclid).
 assert (X:=equivalent_postulates_without_decidability_of_intersection_of_lines).
 apply all_equiv__equiv; unfold all_equiv, all_equiv' in *; simpl in *.
-repeat (split; try rtauto; try (intro Z;
+repeat (split; try tauto; try (intro Z;
         assert (HP:playfair_s_postulate)
-          by (try rtauto; let A := type of Z in (apply -> (X A); try assumption; tauto));
+          by (try tauto; let A := type of Z in (apply -> (X A); try assumption; tauto));
         assert (J:perpendicular_transversal_postulate)
           by (let A := type of HP in (apply -> (X A); try assumption; tauto));
-        try rtauto; let A := type of HP in (apply -> (X A); try assumption; tauto))).
+        try tauto; let A := type of HP in (apply -> (X A); try assumption; tauto))).
 Qed.
 
 (** Every postulate which states the existence of a point is equivalent *)
@@ -192,9 +194,9 @@ assert (S:=tarski_s_euclid_implies_euclid_5).
 assert (T:=triangle_circumscription_implies_tarski_s_euclid).
 assert (HPP:=equivalent_postulates_with_decidability_of_intersection_of_lines).
 apply all_equiv__equiv; unfold all_equiv, all_equiv' in *; simpl in *.
-repeat (split; try (try rtauto; intro W;
-                    assert (HID:decidability_of_intersection) by rtauto;
-                    let HTW := type of W in (apply -> (HPP HID HTW); try tauto; rtauto))).
+repeat (split; try (try tauto; intro W;
+                    assert (HID:decidability_of_intersection) by tauto;
+                    let HTW := type of W in (apply -> (HPP HID HTW); try tauto; tauto))).
 Qed.
 
 Theorem stronger_postulates :
@@ -319,8 +321,8 @@ cut playfair_s_postulate;
   assert (H:=stronger_postulates).
   assert (I:=equivalent_postulates_without_decidability_of_intersection_of_lines).
   unfold stronger, all_equiv in *; simpl in H; simpl in I; simpl in HInx;
-  decompose [or] HInx; clear HInx; subst; try rtauto;
-  let A := type of Hx in (try (apply (H A); try tauto; rtauto); try (apply -> (I A); try tauto; rtauto)).
+  decompose [or] HInx; clear HInx; subst; try tauto;
+  let A := type of Hx in (try (apply (H A); try tauto; tauto); try (apply -> (I A); try tauto; tauto)).
   }
 Qed.
 
