@@ -3032,7 +3032,7 @@ Proof.
     exists Xu.
     split.
       unfold Prod.
-      repeat split;[|ColR..|].
+      repeat split; [|ColR..|].
         intro.
         apply H.
         ColR.
