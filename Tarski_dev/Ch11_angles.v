@@ -10554,7 +10554,10 @@ repeat
       assert (h := orth_distincts A B C U V H);decompose [and] h;clear h;clean_reap_hyps
  end.
 
-Ltac ColR := elim my_false.
+Ltac ColR :=
+  match goal with
+   |- ?g => let H := fresh in assert (H:g) by (elim my_false); exact H
+  end.
 (*
  let tpoint := constr:(Tpoint) in
  let col := constr:(Col) in

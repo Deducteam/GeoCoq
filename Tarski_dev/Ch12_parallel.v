@@ -406,7 +406,10 @@ repeat
        decompose [and] T;clear T;clean_reap_hyps
  end.
 
-Ltac ColR := elim my_false.
+Ltac ColR :=
+  match goal with
+   |- ?g => let H := fresh in assert (H:g) by (elim my_false); exact H
+  end.
 (*
  let tpoint := constr:(Tpoint) in
  let col := constr:(Col) in
@@ -439,7 +442,10 @@ repeat
       assert (h := par_strict_not_cols A B C D H);decompose [and] h;clear h;clean_reap_hyps
   end.
 
-Ltac CopR := elim my_false.
+Ltac CopR :=
+  match goal with
+   |- ?g => let H := fresh in assert (H:g) by (elim my_false); exact H
+  end.
 (*
  let tpoint := constr:(Tpoint) in
  let col := constr:(Col) in
