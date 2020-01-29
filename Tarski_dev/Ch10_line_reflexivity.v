@@ -57,7 +57,10 @@ Ltac copr_aux :=
           |exist_hyp_perm_col X1 X3 X4; assert (Coplanar X1 X3 X4 X2) by (apply col__coplanar; Col)]
  end.
 
-Ltac CopR := elim my_false.
+Ltac CopR :=
+  match goal with
+   |- ?g => let H := fresh in assert (H:g) by (elim my_false); exact H
+  end.
 (*
  let tpoint := constr:(Tpoint) in
  let col := constr:(Col) in
