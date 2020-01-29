@@ -198,14 +198,24 @@ repeat
 end.
 
 Ltac CongR :=
+  match goal with
+   |- ?g => let H := fresh in assert (H:g) by (elim my_false); exact H
+  end.
+(*
  let tpoint := constr:(Tpoint) in
  let cong := constr:(Cong) in
    treat_equalities; unfold Midpoint in *; spliter; Cong; Cong_refl tpoint cong.
+*)
 
 Ltac ColR :=
+  match goal with
+   |- ?g => let H := fresh in assert (H:g) by (elim my_false); exact H
+  end.
+(*
  let tpoint := constr:(Tpoint) in
  let col := constr:(Col) in
    treat_equalities; assert_cols; Col; assert_diffs; Col_refl tpoint col.
+*)
 
 Ltac show_distinct X Y := assert (X<>Y);[intro;treat_equalities|idtac].
 

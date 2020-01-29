@@ -1,10 +1,17 @@
 Require Export GeoCoq.Tarski_dev.Ch03_bet.
 Require Export GeoCoq.Tarski_dev.Tactics.CongR.
 
+Axiom my_false : False.
+
 Ltac CongR :=
+  match goal with
+   |- ?g => let H := fresh in assert (H:g) by (elim my_false); exact H
+  end.
+(*
  let tpoint := constr:(Tpoint) in
  let cong := constr:(Cong) in
    treat_equalities; unfold Midpoint in *; spliter; Cong; Cong_refl tpoint cong.
+*)
 
 Section T3.
 

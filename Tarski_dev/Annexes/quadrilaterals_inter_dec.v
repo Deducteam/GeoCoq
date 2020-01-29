@@ -277,6 +277,10 @@ repeat
 end.
 
 Ltac CopR :=
+  match goal with
+   |- ?g => let H := fresh in assert (H:g) by (elim my_false); exact H
+  end.
+(*
  let tpoint := constr:(Tpoint) in
  let col := constr:(Col) in
  let cop := constr:(Coplanar) in
@@ -284,6 +288,7 @@ Ltac CopR :=
    solve[apply col__coplanar; Col|apply coplanar_perm_1, col__coplanar; Col
         |apply coplanar_perm_4, col__coplanar; Col|apply coplanar_perm_18, col__coplanar; Col
         |copr_aux; Cop_refl tpoint col cop] || fail "Can not be deduced".
+*)
 
 Section Quadrilateral_inter_dec_1.
 
@@ -2418,14 +2423,24 @@ repeat
  end.
 
 Ltac ColR :=
+  match goal with
+   |- ?g => let H := fresh in assert (H:g) by (elim my_false); exact H
+  end.
+(*
  let tpoint := constr:(Tpoint) in
  let col := constr:(Col) in
    treat_equalities; assert_cols; Col; assert_diffs; Col_refl tpoint col.
+*)
 
 Ltac CongR :=
+  match goal with
+   |- ?g => let H := fresh in assert (H:g) by (elim my_false); exact H
+  end.
+(*
  let tpoint := constr:(Tpoint) in
  let cong := constr:(Cong) in
    treat_equalities; assert_congs_1; Cong; Cong_refl tpoint cong.
+*)
 
 Ltac show_distinct X Y := assert (X<>Y);[intro;treat_equalities|idtac].
 

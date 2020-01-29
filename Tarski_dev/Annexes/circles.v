@@ -171,9 +171,14 @@ repeat
 end.
 
 Ltac CongR :=
+  match goal with
+   |- ?g => let H := fresh in assert (H:g) by (elim my_false); exact H
+  end.
+(*
  let tpoint := constr:(Tpoint) in
  let cong := constr:(Cong) in
    treat_equalities; unfold OnCircle, Midpoint in *; spliter; Cong; Cong_refl tpoint cong.
+*)
 
 Section Circle_2.
 

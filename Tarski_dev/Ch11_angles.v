@@ -10555,9 +10555,14 @@ repeat
  end.
 
 Ltac ColR :=
+  match goal with
+   |- ?g => let H := fresh in assert (H:g) by (elim my_false); exact H
+  end.
+(*
  let tpoint := constr:(Tpoint) in
  let col := constr:(Col) in
    treat_equalities; assert_cols; Col; assert_diffs; Col_refl tpoint col.
+*)
 
 Hint Resolve conga_refl conga_sym cong3_conga conga_pseudo_refl conga_trivial_1
              conga_right_comm conga_left_comm conga_comm conga_line l11_16 : conga.
