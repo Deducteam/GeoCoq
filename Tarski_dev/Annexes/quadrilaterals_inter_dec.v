@@ -276,10 +276,7 @@ repeat
      assert (N := par_id X1 X2 X3 (par_comm X2 X1 X3 X1 H))
 end.
 
-Ltac CopR :=
-  match goal with
-   |- ?g => let H := fresh in assert (H:g) by (elim my_false); exact H
-  end.
+Ltac CopR := CoincR.
 (*
  let tpoint := constr:(Tpoint) in
  let col := constr:(Col) in
@@ -2422,20 +2419,14 @@ repeat
        assert (T:= plgs_diff A B C D H);decompose [and] T;clear T;clean_reap_hyps
  end.
 
-Ltac ColR :=
-  match goal with
-   |- ?g => let H := fresh in assert (H:g) by (elim my_false); exact H
-  end.
+Ltac ColR := CoincR.
 (*
  let tpoint := constr:(Tpoint) in
  let col := constr:(Col) in
    treat_equalities; assert_cols; Col; assert_diffs; Col_refl tpoint col.
 *)
 
-Ltac CongR :=
-  match goal with
-   |- ?g => let H := fresh in assert (H:g) by (elim my_false); exact H
-  end.
+Ltac CongR := CoincR.
 (*
  let tpoint := constr:(Tpoint) in
  let cong := constr:(Cong) in
