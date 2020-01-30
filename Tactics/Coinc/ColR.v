@@ -244,9 +244,6 @@ Definition test_col ss sp p1 p2 p3 : bool :=
   let newss := identify_lines ss sp (cardinal ss)  in
     (@exists_ SS) (fun s => mem p1 s && mem p2 s && mem p3 s) newss.
 
-
- *)
-
 Section Col_refl.
 
 Context `{CT:Col_theory}.
