@@ -197,20 +197,14 @@ repeat
      let T := fresh in assert (T := l7_17_bis P P' A B H H2); smart_subst A
 end.
 
-Ltac CongR :=
-  match goal with
-   |- ?g => let H := fresh in assert (H:g) by (elim my_false); exact H
-  end.
+Ltac CongR := CoincR.
 (*
  let tpoint := constr:(Tpoint) in
  let cong := constr:(Cong) in
    treat_equalities; unfold Midpoint in *; spliter; Cong; Cong_refl tpoint cong.
 *)
 
-Ltac ColR :=
-  match goal with
-   |- ?g => let H := fresh in assert (H:g) by (elim my_false); exact H
-  end.
+Ltac ColR := CoincR.
 (*
  let tpoint := constr:(Tpoint) in
  let col := constr:(Col) in

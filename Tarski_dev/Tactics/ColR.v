@@ -251,31 +251,6 @@ Notation "A & B" := (and A B) (at level 80, right associativity, only printing) 
 Notation "wd( A , B )" := (A <> B) (only printing) : tptp_fol_scope.
 Notation "col( A , B , C )" := (Definitions.Col A B C) (only printing) : tptp_fol_scope.
 
-Set Printing Depth 1000.
-
-Global Open Scope tptp_fol_scope.
-*)
-
-Ltac Print_Goal :=
-  match goal with
-  | |- ?G => idtac "fof(pipo,conjecture," G ")"
-  end.
-
-Ltac Col_refl Tpoint Col :=
-(*
-  let Pnil := constr:(@nil Tpoint) in
-*)
-  let Pnil := constr:(@nil (@prod Tpoint positive)) in
-  let CT := fresh in
-  assert (CT : Col_theory Tpoint Col) by (typeclasses eauto);
-  revert_all Tpoint Col CT;(* Print_Goal;*) Col_refl_aux Tpoint Col CT Pnil (*Inil*) (1%positive).
-
-(*
-Notation "A => B" := (A -> B) (at level 99, no associativity, only printing) : tptp_fol_scope.
-Notation "A & B" := (and A B) (at level 80, right associativity, only printing) : tptp_fol_scope.
-Notation "wd( A , B )" := (A <> B) (only printing) : tptp_fol_scope.
-Notation "col( A , B , C )" := (Definitions.Col A B C) (only printing) : tptp_fol_scope.
-
 Global Set Printing Depth 1000.
 
 Global Open Scope tptp_fol_scope.
@@ -373,7 +348,7 @@ Goal True.
 Proof.
 time let c := (eval compute in Unnamed_thm) in
 assert (c = c).
-
+Qed.
 
 End Test.
 *)
